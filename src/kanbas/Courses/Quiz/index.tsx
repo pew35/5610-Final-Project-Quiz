@@ -6,6 +6,8 @@ import { useState } from "react";
 import { FaCircle, FaPlus, FaTrash } from "react-icons/fa";
 import { BsGripVertical } from "react-icons/bs";
 import GreenCheckmark from "./GreenCheckmark";
+import { MdOutlineRocketLaunch } from "react-icons/md";
+import { IoEllipsisVertical } from "react-icons/io5";
 
 export default function Quiz() {
     const Quiz = [{
@@ -19,22 +21,30 @@ export default function Quiz() {
         availableUntilDate: "2024-12-05",
         dueDate: "2024-12-01",
         points: 50,
+        numberOfQuestion: 5
     },
     {
         id: 2,
         title: "Q2",
         detail: "",
         course: "RS101",
-        publish: true,
+        publish: false,
         attempts: 4,
         availableDate: "2024-11-30",
         availableUntilDate: "2024-12-05",
         dueDate: "2024-12-01",
         points: 40,
+        numberOfQuestion: 5
     }]
     const [quizzes, setQuizzes] = useState<any[]>(Quiz);
     const { cid } = useParams();
-    
+
+    const [isDropdownOpen, setDropdownOpen] = useState(false);
+
+    const toggleDropdown = () => {
+        setDropdownOpen(!isDropdownOpen);
+    };
+
 
 
     return (
@@ -56,16 +66,15 @@ export default function Quiz() {
             <hr />
             <br />
             <br />
-            <br />
-            <br />
+           
             <ul id="wd-quizzes" className="list-group rounded-0">
 
 
 
                 <li className="wd-quizzes list-group-item p-0 mb-5 fs-5 border-gray">
                     <div className="wd-title p-3 ps-2 bg-secondary">
-                        <BsGripVertical className="me-2 fs-3" />
-                        quizzes
+                        <BsGripVertical className="me-2 fs-2" />
+                        Quizzes
                     </div>
 
 
@@ -74,47 +83,96 @@ export default function Quiz() {
                         <ul className="list-group rounded-0">
                             {quizzes
                                 .filter(
-                                    (quizzes: any) =>
-                                        quizzes.course === cid
+                                    (quiz: any) =>
+                                        quiz.course === cid
                                 )
-                                .map((quizzes: any) => (
+                                .map((quiz: any) => (
 
 
 
-
-                                    <li className=" list-group-item p-3 ps-1">
+                                    <li className="wd-quiz list-group-item p-3 ps-1">
                                         <div className="row">
-                                            <div className="col-auto"
+                                            <div className="col-auto "
                                                 style={{ margin: "auto" }}
                                             >
-                                                
-                                                <GrNotes className=" text-success fs-3 mg-left-3" />
+                                                <MdOutlineRocketLaunch className=" text-success fs-3 mg-left-3" />
                                             </div>
-                                            <div className="col wd-fg-color-gray ps-0 ms-2">
+                                            <div className="col wd-fg-color-gray ps-0 ms-2 " >
                                                 <Link
                                                     to={`/Kanbas/Courses/${cid}/quizzes`}
-                                                    className=" nav-link d-flex flex-row me-2 text-black bg-white"
-                                                    style={{ fontSize: "16px", fontWeight: "bold" }}
+                                                    className=" nav-link d-flex flex-row me-1 text-black bg-white"
+                                                    style={{ fontSize: "19px" }}
                                                 >
-                                                    {quizzes.title}
+                                                    {quiz.title}
                                                 </Link>
-                                                {`Not available until ${quizzes.availableDate} | Due ${quizzes.dueDate}| ${quizzes.points} pts`}
+                                                <span style={{ fontSize: "19px" }}>
+                                                    {new Date() < new Date(quiz.availableDate)
+                                                        ? "Not available until "
+                                                        : new Date() >= new Date(quiz.availableDate) &&
+                                                            new Date() <= new Date(quiz.availableUntilDate)
+                                                            ? "Available"
+                                                            : "Closed"}
+                                                </span>
+                                                <span style={{ fontSize: "17px" }}>
+                                                    {new Date() < new Date(quiz.availableDate)
+                                                        ? quiz.availableDate
+                                                        : null}
+                                                </span>
+                                                
+                                                <span style={{ fontSize: "19px" }}>
+                                                    { ` | Due`}
+                                                </span>
+                                                <span style={{ fontSize: "16px" }} >
+                                                    {` ${quiz.dueDate} | ${quiz.points} pts |  ${quiz.numberOfQuestion} questions`}
+                                                </span>
+
                                             </div>
                                             <div
                                                 className="col-auto"
                                                 style={{ margin: "auto" }}
                                             >
-                                                <div className="float-end">
-                                                    <GreenCheckmark />
+                                                <div className="float-end ">
+                                                    <GreenCheckmark publish={!!quiz.publish} />
+                                                    <button
+                                                        className="btn  p-0 border-0"
+                                                        data-bs-toggle="dropdown"
+
+                                                    ><IoEllipsisVertical className=" fs-3 mg-left-3 " /></button>
+
+
+                                                    <ul className="dropdown-menu">
+                                                        <li
+                                                            className="dropdown-item"
+                                                            style={{ padding: "8px 15px", cursor: "pointer" }}
+                                                            onClick={() => alert("Edit")}
+                                                        >
+                                                            Edit
+                                                        </li>
+                                                        <li
+                                                            className="dropdown-item"
+                                                            style={{ padding: "8px 15px", cursor: "pointer" }}
+                                                            onClick={() => alert("Delete")}
+                                                        >
+                                                            Delete
+                                                        </li>
+                                                        <li
+                                                            className="dropdown-item"
+                                                            style={{ padding: "8px 15px", cursor: "pointer" }}
+                                                            onClick={() => alert("Publish/Unpublish")}
+                                                        >
+                                                            {quiz.publish ? "Unpublish " : "Publish "}
+                                                        </li>
+
+                                                    </ul>
                                                 </div>
-                                                
+
                                             </div>
                                         </div>
                                     </li>
-                                    
 
 
-                                    
+
+
                                 ))}
                         </ul>
                     )}
