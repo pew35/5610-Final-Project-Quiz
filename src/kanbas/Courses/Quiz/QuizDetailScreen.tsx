@@ -24,6 +24,8 @@ export default function QuizEditor() {
             {quizzes.filter((quiz: any) => parseInt(quiz.id) === parseInt(qid)).map((quiz: any) => (
                 <div id="wd-assignments-editor">
                     <h4>{quiz.title}</h4>
+
+                    {/* this is the quize type and what no */}
                     <div className="container">
                         <div className="row">
                             <div className="col d-flex flex-column align-items-end p-2 my-2">
@@ -42,6 +44,7 @@ export default function QuizEditor() {
                                 <span className="text-end fw-bold my-1"> Webcam Required </span>
                                 <span className="text-end fw-bold my-1"> Lock Questions After Answering </span>
                             </div>
+
                             <div className="col d-flex flex-column align-items-start p-2 my-2">
                                 <span className="text-start my-1"> Graded Quiz </span>
                                 <span className="text-start my-1"> {quiz.points} </span>
@@ -60,6 +63,9 @@ export default function QuizEditor() {
                             </div>
                         </div>
                     </div>
+
+                    {/* this show due date for available from and until */}
+                    
                 <br />
             </div>
             ))}
