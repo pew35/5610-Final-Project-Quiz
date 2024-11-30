@@ -2,7 +2,7 @@ import { useLocation, Link } from "react-router-dom";
 import * as db from "../../Database";
 
 
-export default function QuizEditor() {
+export default function QuizDetailScreen() {
     const {pathname} = useLocation();
     const quizzes = db.quizzes;
     const qid = pathname.split("/")[5]
@@ -63,9 +63,43 @@ export default function QuizEditor() {
                             </div>
                         </div>
                     </div>
+                    <br/>
 
                     {/* this show due date for available from and until */}
-                    
+                    <div className="container">
+                        <div className="row">
+                            <div className="col d-flex flex-column align-items-start">
+                                <span className="text-start fw-bold "> Due </span>
+                            </div>
+                            <div className="col d-flex flex-column align-items-start">
+                                <span className="text-start fw-bold "> For </span>
+                            </div>
+                            <div className="col d-flex flex-column align-items-start">
+                                <span className="text-end fw-bold "> Available From </span>
+                            </div>
+                            <div className="col d-flex flex-column align-items-start">
+                                <span className="text-end fw-bold "> Until </span>
+                            </div>
+                        </div>
+	                </div>
+                    <hr/>
+                    <div className="container">
+                        <div className="row">
+                            <div className="col d-flex flex-column align-items-start">
+                                <span className="text-start"> {quiz.dueDate} </span>
+                            </div>
+                            <div className="col d-flex flex-column align-items-start">
+                                <span className="text-start"> Everyone </span>
+                            </div>
+                            <div className="col d-flex flex-column align-items-start">
+                                <span className="text-end"> {quiz.availableDate} </span>
+                            </div>
+                            <div className="col d-flex flex-column align-items-start">
+                                <span className="text-end"> {quiz.availableUntilDate} </span>
+                            </div>
+                        </div>
+	                </div>
+                    <hr/>
                 <br />
             </div>
             ))}
