@@ -145,9 +145,9 @@ export default function QuizEditor() {
                                             </label>
                                             <Editor
                                                 id="quizInstructions"
-                                                apiKey="YOUR_TINY_MCE_API_KEY" // 可选
-                                                value={instructions} // 当前内容
-                                                onEditorChange={handleEditorChange} // 更新内容
+                                                apiKey="YOUR_TINY_MCE_API_KEY"
+                                                value={instructions} 
+                                                onEditorChange={handleEditorChange} 
                                                 init={{
                                                     height: 300,
                                                     menubar: true,
@@ -171,7 +171,7 @@ export default function QuizEditor() {
                                                 <label
                                                     htmlFor="quizType"
                                                     className="form-label me-3"
-                                                    style={{ width: "120px", textAlign: "right" }} // 标签右对齐
+                                                    style={{ width: "120px", textAlign: "right" }} 
                                                 >
                                                     Quiz Type
                                                 </label>
@@ -179,7 +179,7 @@ export default function QuizEditor() {
                                                     id="quizType"
                                                     className="form-select"
                                                     defaultValue="graded"
-                                                    style={{ flex: 1 }} // 下拉框占据剩余空间
+                                                    style={{ flex: 1 }} 
                                                 >
                                                     <option value="graded">Graded Quiz</option>
                                                     <option value="practice">Practice Quiz</option>
@@ -193,7 +193,7 @@ export default function QuizEditor() {
                                                 <label
                                                     htmlFor="assignmentGroup"
                                                     className="form-label me-3"
-                                                    style={{ width: "120px", textAlign: "right" }} // 标签右对齐
+                                                    style={{ width: "120px", textAlign: "right" }} 
                                                 >
                                                     Assignment Group
                                                 </label>
@@ -201,7 +201,7 @@ export default function QuizEditor() {
                                                     id="assignmentGroup"
                                                     className="form-select"
                                                     defaultValue="Assignments"
-                                                    style={{ flex: 1 }} // 下拉框占据剩余空间
+                                                    style={{ flex: 1 }} 
                                                 >
                                                     <option value="quizzes">Quizzes</option>
                                                     <option value="exams">Exams</option>
@@ -279,8 +279,8 @@ export default function QuizEditor() {
                                             style={{
                                                 borderRadius: "8px",
                                                 width: "400px",
-                                                marginLeft: "120px", // 与 Quiz Type 和 Assignment Group 对齐
-                                                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)", // 添加轻微阴影
+                                                marginLeft: "120px", 
+                                                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)", 
                                             }}
                                         >
                                             <label className="form-label fw-bold mb-3">Assign</label>
