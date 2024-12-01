@@ -6,6 +6,7 @@ import { Editor } from "@tinymce/tinymce-react";
 
 import * as db from "../../Database";
 
+
 import QuizEditorMultipleChoice from "./QuizEditorType/QuizEditorMutlipleChoice";
 import QuizEditorTrueFalse from "./QuizEditorType/QuizEditorTrueFalse";
 import QuizEditorFillInTheBlank from "./QuizEditorType/QuizEditorFillInTheBlank";
@@ -165,107 +166,176 @@ export default function QuizEditor() {
 
                                         {/* Quiz Type and Assignment Group */}
                                         <div className="mb-3">
-                                            <label htmlFor="quizType" className="form-label">Quiz Type</label>
-                                            <select id="quizType" className="form-select mb-3">
-                                                <option value="graded">Graded Quiz</option>
-                                                <option value="practice">Practice Quiz</option>
-                                                <option value="survey">Survey</option>
-                                            </select>
+                                            {/* Quiz Type */}
+                                            <div className="d-flex align-items-center mb-3" style={{ width: "400px" }}>
+                                                <label
+                                                    htmlFor="quizType"
+                                                    className="form-label me-3"
+                                                    style={{ width: "120px", textAlign: "right" }} // 标签右对齐
+                                                >
+                                                    Quiz Type
+                                                </label>
+                                                <select
+                                                    id="quizType"
+                                                    className="form-select"
+                                                    defaultValue="graded"
+                                                    style={{ flex: 1 }} // 下拉框占据剩余空间
+                                                >
+                                                    <option value="graded">Graded Quiz</option>
+                                                    <option value="practice">Practice Quiz</option>
+                                                    <option value="gradedSurvey">Graded Survey</option>
+                                                    <option value="ungradedSurvey">Ungraded Survey</option>
+                                                </select>
+                                            </div>
 
-                                            <label htmlFor="assignmentGroup" className="form-label">Assignment Group</label>
-                                            <select id="assignmentGroup" className="form-select">
-                                                <option value="assignments">Assignments</option>
-                                                <option value="exams">Exams</option>
-                                                <option value="projects">Projects</option>
-                                            </select>
+                                            {/* Assignment Group */}
+                                            <div className="d-flex align-items-center" style={{ width: "400px" }}>
+                                                <label
+                                                    htmlFor="assignmentGroup"
+                                                    className="form-label me-3"
+                                                    style={{ width: "120px", textAlign: "right" }} // 标签右对齐
+                                                >
+                                                    Assignment Group
+                                                </label>
+                                                <select
+                                                    id="assignmentGroup"
+                                                    className="form-select"
+                                                    defaultValue="Assignments"
+                                                    style={{ flex: 1 }} // 下拉框占据剩余空间
+                                                >
+                                                    <option value="quizzes">Quizzes</option>
+                                                    <option value="exams">Exams</option>
+                                                    <option value="assignments">Assignments</option>
+                                                    <option value="projects">Project</option>
+                                                </select>
+                                            </div>
                                         </div>
 
-                                        {/* Options */}
-                                        <div className="mb-3">
-                                            <label className="form-label">Options</label>
-                                            <div className="form-check">
+                                                                            {/* Options Section */}
+                                                                            <div className="mb-3">
+                                        <label className="form-label fw-bold" style={{ marginLeft: "120px" }}>
+                                            Options
+                                        </label>
+
+                                        {/* Shuffle Answers */}
+                                        <div className="d-flex align-items-center mb-3" style={{ width: "400px", marginLeft: "120px" }}>
+                                            <input
+                                                type="checkbox"
+                                                className="form-check-input me-3"
+                                                id="shuffleAnswers"
+                                            />
+                                            <label htmlFor="shuffleAnswers" className="form-check-label mb-0">
+                                                Shuffle Answers
+                                            </label>
+                                        </div>
+
+                                        {/* Time Limit */}
+                                        <div className="d-flex align-items-center mb-3" style={{ width: "400px", marginLeft: "120px" }}>
+                                            <input
+                                                type="checkbox"
+                                                className="form-check-input me-3"
+                                                id="timeLimit"
+                                            />
+                                            <label htmlFor="timeLimit" className="form-check-label mb-0 me-2">
+                                                Time Limit
+                                            </label>
+                                            <input
+                                                type="number"
+                                                className="form-control"
+                                                placeholder="Minutes"
+                                                style={{ width: "100px" }}
+                                            />
+                                            <span className="ms-2">Minutes</span>
+                                        </div>
+
+                                        {/* Allow Multiple Attempts */}
+                                        <div className="d-flex align-items-center" style={{ width: "400px", marginLeft: "120px" }}>
+                                            <div
+                                                className="border p-2"
+                                                style={{
+                                                    borderRadius: "5px",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    flex: 1,
+                                                }}
+                                            >
                                                 <input
                                                     type="checkbox"
-                                                    className="form-check-input"
-                                                    id="shuffleAnswers"
-                                                />
-                                                <label htmlFor="shuffleAnswers" className="form-check-label">
-                                                    Shuffle Answers
-                                                </label>
-                                            </div>
-                                            <div className="form-check">
-                                                <input
-                                                    type="checkbox"
-                                                    className="form-check-input"
-                                                    id="timeLimit"
-                                                />
-                                                <label htmlFor="timeLimit" className="form-check-label">
-                                                    Time Limit
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    className="form-control mt-2"
-                                                    placeholder="Minutes"
-                                                    style={{ width: "100px" }}
-                                                    disabled
-                                                />
-                                            </div>
-                                            <div className="form-check">
-                                                <input
-                                                    type="checkbox"
-                                                    className="form-check-input"
+                                                    className="form-check-input me-2"
                                                     id="multipleAttempts"
                                                 />
-                                                <label htmlFor="multipleAttempts" className="form-check-label">
+                                                <label htmlFor="multipleAttempts" className="form-check-label mb-0">
                                                     Allow Multiple Attempts
                                                 </label>
                                             </div>
                                         </div>
+                                    </div>
+
+
 
                                         {/* Assign Section */}
-                                        <div className="mb-3">
-                                            <h5>Assign</h5>
+                                        <div
+                                            className="border p-4 mt-4"
+                                            style={{
+                                                borderRadius: "8px",
+                                                width: "400px",
+                                                marginLeft: "120px", // 与 Quiz Type 和 Assignment Group 对齐
+                                                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)", // 添加轻微阴影
+                                            }}
+                                        >
+                                            <label className="form-label fw-bold mb-3">Assign</label>
+
+                                            {/* Assign To */}
                                             <div className="mb-3">
-                                                <label htmlFor="assignTo" className="form-label">Assign To</label>
-                                                <select id="assignTo" className="form-select">
+                                                <label htmlFor="assignTo" className="form-label">Assign to</label>
+                                                <select
+                                                    id="assignTo"
+                                                    className="form-select"
+                                                    defaultValue="everyone"
+                                                >
                                                     <option value="everyone">Everyone</option>
                                                     <option value="group1">Group 1</option>
                                                     <option value="group2">Group 2</option>
                                                 </select>
                                             </div>
+
+                                            {/* Due */}
+                                            <div className="mb-3">
+                                                <label htmlFor="dueDate" className="form-label">Due</label>
+                                                <input
+                                                    type="date"
+                                                    id="dueDate"
+                                                    className="form-control"
+                                                />
+                                            </div>
+
+                                            {/* Available From and Until */}
                                             <div className="row">
                                                 <div className="col-md-6">
-                                                    <label htmlFor="dueDate" className="form-label">Due</label>
+                                                    <label htmlFor="availableFrom" className="form-label">Available from</label>
                                                     <input
                                                         type="date"
-                                                        className="form-control"
-                                                        id="dueDate"
-                                                    />
-                                                </div>
-                                                <div className="col-md-3">
-                                                    <label htmlFor="availableFrom" className="form-label">Available From</label>
-                                                    <input
-                                                        type="date"
-                                                        className="form-control"
                                                         id="availableFrom"
+                                                        className="form-control"
                                                     />
                                                 </div>
-                                                <div className="col-md-3">
+                                                <div className="col-md-6">
                                                     <label htmlFor="availableUntil" className="form-label">Until</label>
                                                     <input
                                                         type="date"
-                                                        className="form-control"
                                                         id="availableUntil"
+                                                        className="form-control"
                                                     />
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Save and Cancel Buttons */}
-                                        <div className="d-flex justify-content-end">
-                                            <button className="btn btn-secondary me-2">Cancel</button>
-                                            <button className="btn btn-danger">Save</button>
+                                            {/* Add Button */}
+                                            <div className="d-flex justify-content-center mt-3">
+                                                <button className="btn btn-outline-secondary w-100">+ Add</button>
+                                            </div>
                                         </div>
+                                                                                
+
                                     </div>
                                 </div>
                             )}
