@@ -58,17 +58,13 @@ export default function Quiz() {
             <br />
             <br />
             <br />
+            
             <ul id="wd-quizzes" className="list-group rounded-0">
-
-
-
                 <li className="wd-quizzes list-group-item p-0 mb-5 fs-5 border-gray">
                     <div className="wd-title p-3 ps-2 bg-secondary">
                         <BsGripVertical className="me-2 fs-3" />
-                        quizzes
+                        Assignment Quizzes
                     </div>
-
-
 
                     {quizzes && (
                         <ul className="list-group rounded-0">
@@ -78,9 +74,6 @@ export default function Quiz() {
                                         quizzes.course === cid
                                 )
                                 .map((quizzes: any) => (
-
-
-
 
                                     <li className=" list-group-item p-3 ps-1">
                                         <div className="row">
@@ -92,7 +85,7 @@ export default function Quiz() {
                                             </div>
                                             <div className="col wd-fg-color-gray ps-0 ms-2">
                                                 <Link
-                                                    to={`/Kanbas/Courses/${cid}/quizzes`}
+                                                    to={`/Kanbas/Courses/${cid}/quizzes/${quizzes?.id}`}
                                                     className=" nav-link d-flex flex-row me-2 text-black bg-white"
                                                     style={{ fontSize: "16px", fontWeight: "bold" }}
                                                 >
@@ -111,9 +104,6 @@ export default function Quiz() {
                                             </div>
                                         </div>
                                     </li>
-                                    
-
-
                                     
                                 ))}
                         </ul>
