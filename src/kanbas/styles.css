@@ -43,3 +43,15 @@ body * {  font-family: Arial, Helvetica, sans-serif;  }
     float: left;
  }
  
+ .form-select {
+  width: 100%; 
+}
+
+.mb-3 label {
+  display: block; 
+  margin-bottom: 0.5rem; 
+}
+
+.mb-3 select {
+  margin-bottom: 1rem; 
+}

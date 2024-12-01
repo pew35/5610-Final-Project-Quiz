@@ -1,12 +1,15 @@
 import { useLocation, Link } from "react-router-dom";
 import React, {Suspense, useState} from "react";
 import { useNavigate } from "react-router-dom";
+import ReactQuill from "react-quill";
+import { Editor } from "@tinymce/tinymce-react";
 
 import * as db from "../../Database";
 
 import QuizEditorMultipleChoice from "./QuizEditorType/QuizEditorMutlipleChoice";
 import QuizEditorTrueFalse from "./QuizEditorType/QuizEditorTrueFalse";
 import QuizEditorFillInTheBlank from "./QuizEditorType/QuizEditorFillInTheBlank";
+
 
 type Question = {
     id: number;
@@ -25,6 +28,11 @@ export default function QuizEditor() {
 
     const [activeTab, setActiveTab] = useState("details");
     const [isEditing, setIsEditing] = useState(false);
+    const [instructions, setInstructions] = useState("");
+
+    const handleEditorChange = (content: string) => {
+        setInstructions(content);
+    };
 
     // this is for drop down question to pick what kind of quiz. ie multiple choice, true/false ...
     const [questionType, setQuestionType] = useState("Multiple Choice");
@@ -131,33 +139,45 @@ export default function QuizEditor() {
 
                                         {/* Quiz Instructions */}
                                         <div className="mb-3">
-                                            <label htmlFor="quizInstructions" className="form-label">Quiz Instructions</label>
-                                            <textarea
-                                                className="form-control"
+                                            <label htmlFor="quizInstructions" className="form-label">
+                                                Quiz Instructions
+                                            </label>
+                                            <Editor
                                                 id="quizInstructions"
-                                                rows={5}
-                                                placeholder="Write instructions here..."
-                                            ></textarea>
+                                                apiKey="YOUR_TINY_MCE_API_KEY" // 可选
+                                                value={instructions} // 当前内容
+                                                onEditorChange={handleEditorChange} // 更新内容
+                                                init={{
+                                                    height: 300,
+                                                    menubar: true,
+                                                    plugins: [
+                                                        "advlist autolink lists link image charmap print preview anchor",
+                                                        "searchreplace visualblocks code fullscreen",
+                                                        "insertdatetime media table paste code help wordcount",
+                                                    ],
+                                                    toolbar:
+                                                        "undo redo | formatselect | bold italic backcolor | \
+                                                        alignleft aligncenter alignright alignjustify | \
+                                                        bullist numlist outdent indent | removeformat | help",
+                                                }}
+                                            />
                                         </div>
 
                                         {/* Quiz Type and Assignment Group */}
-                                        <div className="row mb-3">
-                                            <div className="col-md-6">
-                                                <label htmlFor="quizType" className="form-label">Quiz Type</label>
-                                                <select id="quizType" className="form-select">
-                                                    <option value="graded">Graded Quiz</option>
-                                                    <option value="practice">Practice Quiz</option>
-                                                    <option value="survey">Survey</option>
-                                                </select>
-                                            </div>
-                                            <div className="col-md-6">
-                                                <label htmlFor="assignmentGroup" className="form-label">Assignment Group</label>
-                                                <select id="assignmentGroup" className="form-select">
-                                                    <option value="assignments">Assignments</option>
-                                                    <option value="exams">Exams</option>
-                                                    <option value="projects">Projects</option>
-                                                </select>
-                                            </div>
+                                        <div className="mb-3">
+                                            <label htmlFor="quizType" className="form-label">Quiz Type</label>
+                                            <select id="quizType" className="form-select mb-3">
+                                                <option value="graded">Graded Quiz</option>
+                                                <option value="practice">Practice Quiz</option>
+                                                <option value="survey">Survey</option>
+                                            </select>
+
+                                            <label htmlFor="assignmentGroup" className="form-label">Assignment Group</label>
+                                            <select id="assignmentGroup" className="form-select">
+                                                <option value="assignments">Assignments</option>
+                                                <option value="exams">Exams</option>
+                                                <option value="projects">Projects</option>
+                                            </select>
                                         </div>
 
                                         {/* Options */}
