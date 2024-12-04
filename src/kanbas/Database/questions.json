@@ -1,0 +1,36 @@
+[{
+  "_id": "1",
+  "quizId": "1",
+  "answer": "A",
+  "option": [
+    "A: Lion",
+    "B: Giraffe",
+    "C: Elephant",
+    "D: Deer"
+  ],
+  "question": "What is the king of animals?",
+  "type": "Multiple Choice",
+  "points": 20
+},
+{
+  "_id": "2",
+  "quizId": "1",
+  "answer": "True",
+  "option": [
+    "True",
+    "False"
+  ],
+  "question": "Lion is the king of animals. True or False?",
+  "type": "True or False",
+  "points": 15
+},
+{
+  "_id": "3",
+  "quizId": "1",
+  "answer": "Lion",
+  "option": [],
+  "question": "King of animals is",
+  "type": "Fill in the blank",
+  "points": 15
+}
+]
