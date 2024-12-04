@@ -123,7 +123,7 @@ export default function Quiz() {
                                                     { ` | Due`}
                                                 </span>
                                                 <span style={{ fontSize: "16px" }} >
-                                                    {` ${quiz.dueDate} | ${quiz.points} pts |  ${quiz.numberOfQuestion} questions`}
+                                                    {` ${quiz.dueDate} | ${quiz.points} pts |  ${quiz.numberOfQuestion} Questions`}
                                                 </span>
 
                                             </div>
