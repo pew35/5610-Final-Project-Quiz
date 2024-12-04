@@ -1,19 +1,17 @@
-import { useLocation, Link } from "react-router-dom";
-import React, {Suspense, useState} from "react";
-import { useNavigate } from "react-router-dom";
-
-import * as db from "../../Database";
-
+import React, { useState } from "react";
 import QuizEditorMultipleChoice from "./QuizEditorType/QuizEditorMutlipleChoice";
 import QuizEditorTrueFalse from "./QuizEditorType/QuizEditorTrueFalse";
 import QuizEditorFillInTheBlank from "./QuizEditorType/QuizEditorFillInTheBlank";
+import { Link, useLocation } from "react-router-dom";
+
+
+import * as db from "../../Database";
 
 type Question = {
-    id: number;
-    text: string;
-    type: string;
-  };
-  
+  id: number;
+  text: string;
+  type: string;
+};
 
 export default function QuizEditor() {
     const {pathname} = useLocation();
@@ -22,191 +20,177 @@ export default function QuizEditor() {
     const parentPath = pathname.split('/').slice(0, -1).join('/');
     console.log('parentPath', parentPath)
     console.log('pathname', parentPath)
+    
+    // this is all const related to adding new questions
+    const [questions, setQuestions] = useState<Question[]>([]);
+    const [savedQuestions, setSavedQuestions] = useState<Question[]>([]);
 
-    const [activeTab, setActiveTab] = useState("details");
-    const [isEditing, setIsEditing] = useState(false);
+    // this is used as id
+    const question_length = Date.now()
 
-    // this is for drop down question to pick what kind of quiz. ie multiple choice, true/false ...
-    const [questionType, setQuestionType] = useState("Multiple Choice");
-    const handleSelectChange = (event: any) => {
-        setQuestionType(event.target.value);
+    // Function to add a new question
+    const addQuestion = () => {
+        const newQuestion: Question = {
+        id: question_length,
+        text: "",
+        type: "Multiple Choice", // Default question type
+        };
+        setQuestions([...questions, newQuestion]);
     };
 
-
-    const [questions, setQuestions] = useState<Question[]>([]); // Explicitly define the type
-
-    // Add a new question to the list
-    const handleAddQuestion = () => {
-        setQuestions((prevQuestions) => [
-        ...prevQuestions,
-        { id: prevQuestions.length + 1, text: "", type: "Multiple Choice" },
-        ]);
-    };
-
-    // Update question details
-    const handleQuestionChange = (id: number, field: keyof Question, value: string) => {
+    // Function to handle changes in the question fields
+    const handleQuestionChange = (
+        id: number,
+        key: keyof Question,
+        value: string
+    ) => {
         setQuestions((prevQuestions) =>
         prevQuestions.map((question) =>
-            question.id === id ? { ...question, [field]: value } : question
+            question.id === id ? { ...question, [key]: value } : question
         )
         );
     };
 
-    // const [buttonText, setButtonText] = useState("+ New Question");
-    // const navigate = useNavigate();
+    const saveQuestion = (id: number) => {
+        const questionToSave = questions.find((q) => q.id === id);
+        if (questionToSave) {
+          setSavedQuestions([questionToSave, ...savedQuestions]); // Add saved question to the top
+          deleteQuestion(id); // Remove from editable questions
+        }
+    };
 
-    
-    // type Question = {
-    //     id: number;
-    //     text: string;
-    //     type: string;
-    //     options: string[];
-    // };
-    // const [questions, setQuestions] = useState<Question[]>([]);
-    // const addNewQuestion = () => {
-    //     const newQuestion = {
-    //         id: questions.length + 1,
-    //         text: "New Question",
-    //         type: "Multiple Choice", // Default type
-    //         options: ["Option 1", "Option 2", "Option 3", "Option 4"], // Default options
-    //     };
-    //     setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
+    const deleteQuestion = (id: number) => {
+        setQuestions((prevQuestions) =>
+          prevQuestions.filter((question) => question.id !== id)
+        );
+    };
 
-    //     setButtonText("Add Question");
-    // };
+    const editQuestion = (id: number) => {
+        const questionToEdit = savedQuestions.find((q) => q.id === id);
+        if (questionToEdit) {
+          setQuestions([...questions, questionToEdit]);
+          setSavedQuestions((prevSavedQuestions) =>
+            prevSavedQuestions.filter((question) => question.id !== id)
+          );
+        }
+      };
 
-    // const saveQuestions = () => {
-    //     console.log("Saving questions:", questions);
-    //     navigate(-1);
-    // };
+      const deleteSavedQuestion = (id: number) => {
+        setSavedQuestions((prevSavedQuestions) =>
+          prevSavedQuestions.filter((question) => question.id !== id)
+        );
+      };
 
-
+    // Render fields based on question type
+    const renderQuestionTypeFields = (question: Question) => {
+        switch (question.type) {
+            case "Multiple Choice":
+                return (
+                    <QuizEditorMultipleChoice/>
+                    );
+            case "True/False":
+                return ( 
+                    <QuizEditorTrueFalse/> 
+                );
+            case "Fill in the Blank":
+                return (
+                <QuizEditorFillInTheBlank />
+                );
+            default:
+                return null;
+        }
+    };
 
     return (
         <div>
             {quizzes.filter((quiz: any) => parseInt(quiz.id) === parseInt(qid)).map((quiz: any) => (
                 <div id="wd-assignments-editor">
-                    <h4>{quiz.title}</h4>
-                    <div>
-                        {/* thus us fir Points and Not Published */}
-                        <span className="text-end">Points 0</span>
-                    </div>
+                     <h2>{quiz.title}</h2>
                     <hr/>
+                </div>
+            ))}
 
-                    <div>
-                        {/* Navigation Tabs */}
-                        <ul className="nav nav-tabs">
-                            <li className="nav-item">
-                                <a className={`nav-link ${activeTab === "details" ? "active" : "text-danger"}`} href="#details" 
-                                onClick={(e) => { 
-                                    e.preventDefault();
-                                    setActiveTab("details"); }} > Details </a>
-                            </li>
-                            <li className="nav-item">
-                                <a className={`nav-link ${activeTab === "questions" ? "active" : "text-danger"}`} href="#questions" 
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setActiveTab("questions");
-                                    }} > Questions </a>
-                            </li>
-                        </ul>
-
-                        {/* Tab Content */}
-                        <div className="mt-3">
-                            {activeTab === "details" && (
-                                <div>
-                                    <h4>Details</h4>
-                                </div>
-                            )}
-                            
-                            {activeTab === "questions" && (
-                                <div className="container">
-                                    {/* button to add new questions */}
-                                    <div className="d-flex flex-column align-items-center mt-5">
-                                        <button className="btn btn-secondary" onClick={handleAddQuestion}> + New Question </button>
-                                    </div>
-
-                                    {/* render questions */}
-                                    <div className="mt-4">
-                                        {questions.map((question) => (
-                                            <div key={question.id} className="card mb-3">
-                                                <div className="card-body">
-                                                    {/* <div className="mb-3">
-                                                    <label htmlFor={`questionText-${question.id}`} className="form-label"> Question Text </label>
-                                                    </div> */}
-                                                    <form className="row g-3">
-                                            <div className="d-flex align-items-center  p-2 my-2">
-                                                <div className="col-auto">
-                                                    <input 
-                                                        className="form-control" 
-                                                        placeholder="Easy Question" 
-                                                        // value={quizName} onChange={(e) => setQuizName(e.target.value)} 
-                                                    />
-                                                </div>
-                                                <div className="col-auto wd-css-styling-dropdowns p-2 my-2">
-                                                    <select className="form-select" onChange={handleSelectChange}>
-                                                        <option value="Multiple Choice" selected>Multiple Choice</option>
-                                                        <option value="True/False">True/False</option>
-                                                        <option value="Fill in the Blank">Fill in the Blank</option>
-                                                    </select> 
-                                                </div>
-                                                <div className="ms-auto text-end ms-2  p-2 my-2">
-                                                    <span className="fw-bold">pts: </span>
-                                                </div>
-                                                <div className="col-auto  p-2 my-2">
-                                                    <input 
-                                                        className="form-control"
-                                                        type="number"
-                                                        id="points" 
-                                                        placeholder="0" 
-                                                        min="0"
-                                                        // value={quizName} onChange={(e) => setQuizName(e.target.value)} 
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* Display the selected question type */}
-                                            <Suspense fallback={<div>Loading...</div>}>
-                                                {questionType === "Multiple Choice" && <QuizEditorMultipleChoice />}
-                                                {questionType === "True/False" && <QuizEditorTrueFalse />}
-                                                {questionType === "Fill in the Blank" && <QuizEditorFillInTheBlank />}
-                                            </Suspense>                                                                     
-                                        </form>
-                                    </div>
-                                </div>                                                  
-                            ))}
-                        </div>
-                    </div>
-                            )}
-                        </div>
-                    </div>
-                    <br/>
-                    <hr/>
-
-                    <div id="wd-Assignment-controls" className="text-nowrap ">
-                        <Link id="wd-add-Assignment-btn" className="btn btn-lg btn-danger me-2 float-end"
-                        // onClick={() => {
-                        //     if (newAss) {
-                        //         dispatch(addAssignment(assignment));
-                        //     } else {
-                        //         dispatch(updateAssignment(assignment));
-                        //     }
-                        //     console.log(assignment);
-                        to={`${pathname}`} 
-                            > Save </Link>
-
-                        <Link id="wd-Group" className="btn btn-lg btn-secondary me-2 float-end" 
-                        to={`${pathname}`}
-                        >
-                            Cancel
-                        </Link>
-                    </div>
-                    
+            {savedQuestions.map((question, index) => (
+                <div key={question.id} className="mb-3 p-3 border rounded bg-light">
+                <h5>Question {question.id}</h5>
+                    <p><strong>Type:</strong> {question.type}</p>
+                    <p><strong>Text:</strong> {question.text}</p>
+                    <button className="btn btn-warning me-2" onClick={() => editQuestion(question.id)}> Edit </button>
+                    <button className="btn btn-danger" onClick={() => deleteSavedQuestion(question.id)}> Delete </button>
+                </div>
+            ))}
+            
+            <div className="container mt-4">
+                <div className="d-flex flex-column align-items-center mt-5">
+                    <button className="btn btn-secondary mb-4" onClick={addQuestion}> + Add Question </button>
                 </div>
                 
-                )
-            )
-            }
+                {questions.map((question) => (
+                    <div key={question.id} className="mb-3 p-3 border rounded">
+                        <div className="card-body">
+                            <form className="row g-3">
+                                <div className="d-flex align-items-center  p-2 my-2">
+                                    <div className="col-auto">
+                                        <input type="text"
+                                            id="questionTitle" 
+                                            className="form-control" 
+                                            placeholder="Easy Question"
+                                            // onChange={(e) => setInputValue(e.target.value)}
+                                        ></input>
+                                    </div>
+
+                                    {/* block for selecting questions type ie multiple choice, true/false, */}
+                                    <div className="col-auto wd-css-styling-dropdowns p-2 my-2">
+                                        <select
+                                            value={question.type}
+                                            onChange={(e) =>
+                                            handleQuestionChange(question.id, "type", e.target.value)
+                                            }
+                                            className="form-select">
+                                            <option value="Multiple Choice">Multiple Choice</option>
+                                            <option value="True/False">True/False</option>
+                                            <option value="Fill in the Blank">Fill in the Blank</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="ms-auto text-end ms-2  p-2 my-2">
+                                        <span className="fw-bold">pts: </span>
+                                    </div>
+
+                                    <div className="col-auto  p-2 my-2">
+                                        <input 
+                                            className="form-control"
+                                            type="number"
+                                            id="points" 
+                                            placeholder="0" 
+                                            min="0"
+                                            // value={quizName} onChange={(e) => setQuizName(e.target.value)} 
+                                        />
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    
+                    
+
+                    {/* render question based on selected type */}
+                    {renderQuestionTypeFields(question)}
+                    
+                        <br/>
+                        <hr/>
+
+                        <div id="wd-Assignment-controls" className="text-nowrap ">
+                            <button id="wd-add-Assignment-btn" className="btn btn-success me-2" onClick={() => saveQuestion(question.id)}> Add </button>
+                            <button id="wd-add-Assignment-btn" className="btn btn-danger" onClick={() => deleteQuestion(question.id)} > Cancel </button>
+                        </div>
+
+
+                    </div>
+
+
+                ))}
+            </div>
         </div>
-    )
-}
+        
+    );
+    };
