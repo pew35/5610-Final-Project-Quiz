@@ -1,6 +1,5 @@
 import { GrNotes } from "react-icons/gr";
 import { Link, useLocation, useParams } from "react-router-dom";
-import * as db from "../../Database";
 import { useSelector, useDispatch } from "react-redux";
 import { useState } from "react";
 import { FaCircle, FaPlus, FaTrash } from "react-icons/fa";
@@ -8,6 +7,7 @@ import { BsGripVertical } from "react-icons/bs";
 import GreenCheckmark from "./GreenCheckmark";
 import { MdOutlineRocketLaunch } from "react-icons/md";
 import { IoEllipsisVertical } from "react-icons/io5";
+import JsonStringify from "../../../labs/Lab3/JsonStringify";
 
 export default function Quiz() {
     const Quiz = [{
@@ -18,8 +18,8 @@ export default function Quiz() {
         publish: true,
         attempts: 4,
         availableDate: "2024-10-01",
-        availableUntilDate: "2024-12-05",
-        dueDate: "2024-12-01",
+        availableUntilDate: "2024-12-30",
+        dueDate: "2024-12-30",
         points: 50,
         numberOfQuestion: 5
     },
@@ -39,11 +39,6 @@ export default function Quiz() {
     const [quizzes, setQuizzes] = useState<any[]>(Quiz);
     const { cid } = useParams();
 
-    const [isDropdownOpen, setDropdownOpen] = useState(false);
-
-    const toggleDropdown = () => {
-        setDropdownOpen(!isDropdownOpen);
-    };
 
 
 
@@ -66,19 +61,16 @@ export default function Quiz() {
             <hr />
             <br />
             <br />
-           
+            <br />
+            <br />
+
+
             <ul id="wd-quizzes" className="list-group rounded-0">
-
-
-
                 <li className="wd-quizzes list-group-item p-0 mb-5 fs-5 border-gray">
                     <div className="wd-title p-3 ps-2 bg-secondary">
                         <BsGripVertical className="me-2 fs-2" />
                         Quizzes
                     </div>
-
-
-
                     {quizzes && (
                         <ul className="list-group rounded-0">
                             {quizzes
@@ -87,25 +79,23 @@ export default function Quiz() {
                                         quiz.course === cid
                                 )
                                 .map((quiz: any) => (
-
-
-
                                     <li className="wd-quiz list-group-item p-3 ps-1">
+
                                         <div className="row">
                                             <div className="col-auto "
                                                 style={{ margin: "auto" }}
                                             >
                                                 <MdOutlineRocketLaunch className=" text-success fs-3 mg-left-3" />
                                             </div>
-                                            <div className="col wd-fg-color-gray ps-0 ms-2 " >
+                                            <div className="col wd-fg-color-gray ps-0 ms-2">
                                                 <Link
-                                                    to={`/Kanbas/Courses/${cid}/quizzes`}
-                                                    className=" nav-link d-flex flex-row me-1 text-black bg-white"
-                                                    style={{ fontSize: "19px" }}
+                                                    to={`/Kanbas/Courses/${cid}/quizzes/${quiz.id}`}
+                                                    className="nav-link d-flex flex-row me-0 p-0 text-black bg-white"
+                                                    style={{ fontSize: "21px", lineHeight: "1.1" }} 
                                                 >
                                                     {quiz.title}
                                                 </Link>
-                                                <span style={{ fontSize: "19px" }}>
+                                                <span style={{ fontSize: "17px", lineHeight: "1.0" }}>
                                                     {new Date() < new Date(quiz.availableDate)
                                                         ? "Not available until "
                                                         : new Date() >= new Date(quiz.availableDate) &&
@@ -113,19 +103,15 @@ export default function Quiz() {
                                                             ? "Available"
                                                             : "Closed"}
                                                 </span>
-                                                <span style={{ fontSize: "17px" }}>
-                                                    {new Date() < new Date(quiz.availableDate)
-                                                        ? quiz.availableDate
-                                                        : null}
+                                                <span style={{ fontSize: "17px", lineHeight: "1.0" }} className="text-muted">
+                                                    {new Date() < new Date(quiz.availableDate) ? quiz.availableDate : null}
                                                 </span>
-                                                
-                                                <span style={{ fontSize: "19px" }}>
-                                                    { ` | Due`}
+                                                <span style={{ fontSize: "17px", lineHeight: "1.0" }}>
+                                                    {` | Due`}
                                                 </span>
-                                                <span style={{ fontSize: "16px" }} >
-                                                    {` ${quiz.dueDate} | ${quiz.points} pts |  ${quiz.numberOfQuestion} Questions`}
+                                                <span style={{ fontSize: "16px", lineHeight: "1.0" }} className="text-muted">
+                                                    {` ${quiz.dueDate}  |  ${quiz.points} pts  |   ${quiz.numberOfQuestion} Questions`}
                                                 </span>
-
                                             </div>
                                             <div
                                                 className="col-auto"
@@ -169,10 +155,6 @@ export default function Quiz() {
                                             </div>
                                         </div>
                                     </li>
-
-
-
-
                                 ))}
                         </ul>
                     )}

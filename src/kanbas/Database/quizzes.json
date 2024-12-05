@@ -1,0 +1,24 @@
+[{
+    "id": 1,
+    "title": "Q1",
+    "course": "RS101",
+    "detail": "",
+    "publish": true,
+    "attempts": 4,
+    "availableDate": "2024-10-01",
+    "availableUntilDate": "2024-12-05",
+    "dueDate": "2024-12-01",
+    "points": 50
+},
+{
+    "id": 2,
+    "title": "Q2",
+    "detail": "",
+    "course": "RS101",
+    "publish": true,
+    "attempts": 4,
+    "availableDate": "2024-11-30",
+    "availableUntilDate": "2024-12-05",
+    "dueDate": "2024-12-01",
+    "points": 40
+}]

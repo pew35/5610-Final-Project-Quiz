@@ -1,16 +1,16 @@
 import { Link, useLocation, useParams } from "react-router-dom";
-import * as db from "../../Database";
-import { addAssignment, editAssignment, updateAssignment } from "./reducer";
+import { setAssignments, addAssignment,  updateAssignment } from "./reducer";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
+import * as assignmentClient from "./client";
+import * as coursesClient from "../client";
 
 export default function AssignmentEditor() {
     const dispatch = useDispatch();
     const { cid } = useParams();
     const { pathname } = useLocation();
     const assignments = useSelector(
-        (state: any) => state.assignmentsReducer.assignments
-    ).filter((assignment: any) => assignment.course === cid);
+        (state: any) => state.assignmentsReducer.assignments);
 
     const find = assignments.find(
         (assignment: any) => assignment._id === pathname.split("/")[5]
@@ -28,11 +28,23 @@ export default function AssignmentEditor() {
             available: "",
         }
     );
+    
+    
+    const saveAssignment = async (assignment: any) => {
+        await assignmentClient.updateAassignment(assignment);
+        dispatch(updateAssignment(assignment));
+    };
+
+    const createAssignmentForCourse = async () => {
+        if (!cid) return;
+        const newAssignment = await coursesClient.createAssignmentForCourse(cid, assignment);
+        dispatch(addAssignment(newAssignment));
+    };
     useEffect(() => {
         if (find) {
             setAssignment(find);
         }
-    }, [find]);
+    }, [find, cid, dispatch]);
     return (
         <div id="wd-assignments-editor">
             <label htmlFor="wd-name" className="form-label">
@@ -289,13 +301,16 @@ export default function AssignmentEditor() {
                     className="btn btn-lg btn-danger me-2 float-end"
                     onClick={() => {
                         if (newAss) {
-                            dispatch(addAssignment(assignment));
+                            createAssignmentForCourse();
                             
                         } else {
-                            dispatch(updateAssignment(assignment));
+                            console.log(assignment);
+                            saveAssignment(assignment);
+                            
                             
                         }
                         console.log(assignment);
+                        
                     }}
                     to={`/Kanbas/Courses/${cid}/Assignments`}
                 >
