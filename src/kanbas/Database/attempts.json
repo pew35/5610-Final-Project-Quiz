@@ -1,0 +1,28 @@
+[
+  {
+    "_id": "111",
+    "attemptNumber": 1,
+    "quizID": "1",
+    "answerID": [
+      "11",
+      "12",
+      "13"
+    ],
+    "date": "2024-10-29",
+    "score": 20,
+    "userID": "123"
+  },
+  {
+    "_id": "222",
+    "attemptNumber": 2,
+    "quizID": "1",
+    "answerID": [
+      "14",
+      "15",
+      "16"
+    ],
+    "date": "2024-10-29",
+    "score": 40,
+    "userID": "123"
+  }
+]

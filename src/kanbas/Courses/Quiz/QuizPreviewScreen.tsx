@@ -1,6 +1,6 @@
-import { useLocation, Link, useParams } from "react-router-dom";
+import { useLocation, Link, useParams, useNavigate } from "react-router-dom";
 import {useState} from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import { IoMdArrowDropright } from "react-icons/io";
 import { PiTagSimpleThin } from "react-icons/pi";
@@ -8,6 +8,7 @@ import { IoMdArrowDropleft } from "react-icons/io";
 import { FaCheck } from "react-icons/fa6";
 import { GoQuestion } from "react-icons/go";
 import { MdModeEdit } from "react-icons/md";
+import { setQuizSubmitted } from "./reducer";
 import * as db from "../../Database/";
 
 export default function QuizPreviewScreen() {
@@ -23,6 +24,9 @@ export default function QuizPreviewScreen() {
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [quizStarted, setQuizStarted] = useState(false);
     const currentQuestion = filteredQuestions[currentQuestionIndex];
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+   
 
     const handleStartQuiz = () => {
         if (!quizStarted) {
@@ -45,7 +49,8 @@ export default function QuizPreviewScreen() {
     };
 
     const handleSubmit = () => {
-        console.log("User Answers:", answers);
+        dispatch(setQuizSubmitted({ quizId: qid }));
+        navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}`)
         alert("Quiz submitted!");
     };
 
@@ -218,12 +223,13 @@ export default function QuizPreviewScreen() {
                                 />
                             </p>
 
-                            <button
+                            <button 
                                 className="btn"
                                 style={{
                                     backgroundColor: currentQuestionIndex === filteredQuestions.length - 1 ? "red" : "lightgray",
                                     color: currentQuestionIndex === filteredQuestions.length - 1 ? "white" : "black",
                                 }}
+                                onClick={handleSubmit}
                             >
                                 Submit Quiz
                             </button>
