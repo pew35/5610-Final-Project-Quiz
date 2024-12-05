@@ -9,6 +9,7 @@ export default function QuizDetailScreen() {
     const parentPath = pathname.split('/').slice(0, -1).join('/');
     console.log('parentPath', parentPath)
     console.log('pathname', parentPath)
+    
     return (
         <div>
             <div className="container">
