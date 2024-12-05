@@ -26,7 +26,6 @@ export default function QuizPreviewScreen() {
     const currentQuestion = filteredQuestions[currentQuestionIndex];
     const navigate = useNavigate();
     const dispatch = useDispatch();
-   
 
     const handleStartQuiz = () => {
         if (!quizStarted) {

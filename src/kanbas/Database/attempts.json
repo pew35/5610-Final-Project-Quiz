@@ -8,7 +8,7 @@
       "12",
       "13"
     ],
-    "date": "2024-10-29",
+    "date": "3 Dec at 16:30",
     "score": 20,
     "userID": "123"
   },
@@ -21,8 +21,34 @@
       "15",
       "16"
     ],
-    "date": "2024-10-29",
-    "score": 40,
+    "date": "3 Dec at 18:30",
+    "score": 35,
     "userID": "123"
+  },
+  {
+    "_id": "333",
+    "attemptNumber": 1,
+    "quizID": "1",
+    "answerID": [
+      "17",
+      "18",
+      "19"
+    ],
+    "date": "3 Dec at 16:30",
+    "score": 20,
+    "userID": "234"
+  },
+  {
+    "_id": "444",
+    "attemptNumber": 2,
+    "quizID": "1",
+    "answerID": [
+      "20",
+      "21",
+      "16"
+    ],
+    "date": "3 Dec at 18:30",
+    "score": 35,
+    "userID": "234"
   }
 ]

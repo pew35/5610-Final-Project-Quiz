@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import {useState} from "react";
 import * as db from "../../Database";
 
-
 export default function QuizDetailScreen() {
     const {pathname} = useLocation();
     const quizzes = db.quizzes;
@@ -13,13 +12,18 @@ export default function QuizDetailScreen() {
     const qid = pathname.split("/")[5]
     const parentPath = pathname.split('/').slice(0, -1).join('/');
     const { currentUser } = useSelector((state: any) => state.accountReducer);
+    const quiz = quizzes.filter((q: any) => q.id === qid)
     const filteredQuestions = questions.filter((q: any) => q.quizId === qid);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const currentQuestion = filteredQuestions[currentQuestionIndex];
-
     const { quizStatuses } = useSelector((state: any) => state.quizReducer);
     const quizSubmitted = quizStatuses?.[qid]?.submitted;
-
+    const userAttempts = attempts ? attempts.filter(attempt => attempt?.userID === currentUser._id) : [];
+    const latestAttempt = userAttempts.sort((a, b) => b.attemptNumber - a.attemptNumber)[0];
+    const latestAnswers = answers?  answers.filter(answer => latestAttempt?.answerID.includes(answer._id)) : [];
+    const attemptHistory = userAttempts.map(attempt => ({
+        attemptNumber: attempt.attemptNumber,
+        score: attempt?.score,
+        date: attempt.date
+    }));
 
     console.log('parentPath', parentPath)
     console.log('pathname', parentPath)
@@ -127,12 +131,6 @@ export default function QuizDetailScreen() {
                             </div>
                             <hr />
                             <br />
-
-                            {/* {quizSubmitted && (
-                                <p>Quiz Submitted</p>
-                            )} */}
-
-
                         </>
                     ) : (
                         <>
@@ -145,43 +143,65 @@ export default function QuizDetailScreen() {
                                     <p>
                                         <strong>Due</strong>  {quiz.dueDate}   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                         <strong>Points</strong>  {quiz.points} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <strong>Attempts</strong>  {quiz.attempts} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                         <strong>Questions</strong>  {quiz.questionsCount} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                         <strong>Available</strong>  {quiz.availableDate} - {quiz.availableUntilDate} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                         <strong>Time Limit</strong>  {quiz.timeLimit}
                                     </p>
                                 </div><hr /><br />
-
-
                             </div>
                         ))}
 
+                        {userAttempts.length < quiz.attempts && (
                         <div className="text-center">
                         <Link to={`${pathname}/take`} id="wd-take-quiz" className="btn btn-danger">
                             Take Quiz
                         </Link>
-                        </div>
+                        </div>)}
 
                         </>
                     )}
 
-                    {/* Additional common UI if quiz is submitted */}
-                    {quizSubmitted && (
-
+                    {userAttempts.length>0 && (
                     <div>
-                        <p> This quiz was locked {quiz.availableUntilDate}. </p><hr />
+                        <h3>Attempt History</h3>
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Attempt</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {attemptHistory.map((attempt, index) => (
+                                    <tr key={index}>
+                                        <td>
+                                            {attempt.attemptNumber === latestAttempt.attemptNumber ? 'LATEST' : ''}
+                                        </td>
+                                        <td style = {{color: "red"}}>Attempt {attempt.attemptNumber}</td>
+                                        <td>{attempt?.score} out of {quiz.points}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table><br /><br />
 
                         <div>
-
-                            <h6>Score for this quiz:</h6>
-
-                        </div>
+                            <span>Score for this quiz: <b style={{ fontSize: '20px', fontWeight: 'bold' }}>{latestAttempt?.score}</b> out of {quiz.points}</span>
+                            <h6>Submitted {latestAttempt?.date}</h6>
+                        </div><br />
 
                         {filteredQuestions.map((question, index) => {
-                            const userAnswer = answers.find(answer => answer.questionID === question._id);
+                            const userAnswer = latestAnswers.find(answer => answer.questionID === question._id);
                             const isUserAnswerCorrect = userAnswer && userAnswer.isCorrect;
                             const userSelectedAnswer = userAnswer ? userAnswer.answer[0] : null;
                             const pointsAwarded = isUserAnswerCorrect ? question.points : 0;
-                            const questionBackgroundColor = isUserAnswerCorrect ? "lightgreen" : "lightcoral";
+
+                            const isFaculty = currentUser.role === 'FACULTY';
+                            const isLastAttempt = userAttempts.length === quiz.attempts;
+                            const showAnswer = isFaculty || isLastAttempt;
+
+                            const questionBackgroundColor = showAnswer ? (isUserAnswerCorrect ? "lightgreen" : "lightcoral") : "gray";
 
                             return (
                                 <div key={question._id} className="mb-4">
@@ -193,7 +213,9 @@ export default function QuizDetailScreen() {
                                             borderRadius: "1px 1px 0 0",
                                         }}>
                                         <h5><strong>Question {index + 1}</strong></h5>
-                                        <h6><strong>{pointsAwarded}/{question.points} pts</strong></h6>
+
+                                        {showAnswer && (
+                                        <h6><strong>{pointsAwarded}/{question.points} pts</strong></h6>)}
                                     </div>
 
                                     <div className="p-3" style={{
@@ -222,7 +244,7 @@ export default function QuizDetailScreen() {
                                                                 />
                                                                 <label className="form-check-label">
                                                                     {opt}
-                                                                    {isCorrect && (
+                                                                    {showAnswer && isCorrect && (
                                                                         <span style={{
                                                                             backgroundColor: "green",
                                                                             color: "white",
@@ -233,7 +255,7 @@ export default function QuizDetailScreen() {
                                                                             Correct
                                                                         </span>
                                                                     )}
-                                                                    {isSelected && !isCorrect && (
+                                                                    {showAnswer && isSelected && !isCorrect && (
                                                                         <span style={{
                                                                             backgroundColor: "red",
                                                                             color: "white",
@@ -273,7 +295,7 @@ export default function QuizDetailScreen() {
                                                                 />
                                                                 <label className="form-check-label">
                                                                     {opt}
-                                                                    {isCorrect && (
+                                                                    {showAnswer && isCorrect && (
                                                                         <span style={{
                                                                             backgroundColor: "green",
                                                                             color: "white",
@@ -284,7 +306,7 @@ export default function QuizDetailScreen() {
                                                                             Correct
                                                                         </span>
                                                                     )}
-                                                                    {isSelected && !isCorrect && (
+                                                                    {showAnswer && isSelected && !isCorrect && (
                                                                         <span style={{
                                                                             backgroundColor: "red",
                                                                             color: "white",
@@ -306,7 +328,6 @@ export default function QuizDetailScreen() {
 
                                         {question.type === "Fill in the blank" && (
                                             <div>
-                                                {/* Input displaying user's answer */}
                                                 <input
                                                     type="text"
                                                     className="form-control"
@@ -316,7 +337,7 @@ export default function QuizDetailScreen() {
                                                 />
                                                 <br />
 
-                                                {/* Correct answer */}
+                                                {showAnswer &&  (
                                                 <div>
                                                     <strong>Answer:</strong> {question.answer}
                                                     <span
@@ -331,11 +352,11 @@ export default function QuizDetailScreen() {
                                                         Correct
                                                     </span>
                                                 </div>
+                                                )}
 
-                                                {/* User's answer */}
+                                                {showAnswer && !isUserAnswerCorrect && (
                                                 <div>
                                                     <strong>You Answered:</strong> {userSelectedAnswer || "No Answer"}
-                                                    {!isUserAnswerCorrect && (
                                                         <span
                                                             style={{
                                                                 backgroundColor: "lightcoral",
@@ -347,8 +368,8 @@ export default function QuizDetailScreen() {
                                                         >
                                                             Incorrect
                                                         </span>
-                                                    )}
                                                 </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
