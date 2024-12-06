@@ -6,11 +6,11 @@ import { GrNotes } from "react-icons/gr";
 import { Link, useLocation, useParams } from "react-router-dom";
 import * as db from "../../Database";
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import * as assignmentClient from "./client";
+import * as coursesClient from "../client";
 import {
-    addAssignment,
-    editAssignment,
-    updateAssignment,
+    setAssignments,
     deleteAssignment,
 } from "./reducer";
 import { FaTrash } from "react-icons/fa";
@@ -22,7 +22,21 @@ export default function Assignments() {
         (state: any) => state.assignmentsReducer.assignments
     );
     const dispatch = useDispatch();
-    const { pathname } = useLocation();
+    const fetchAssignments = async () => {
+        const assignments = await coursesClient.findAssignmentsForCourse(cid as string);
+        dispatch(setAssignments(assignments));
+    };
+    useEffect(() => {
+        fetchAssignments();
+    }, []);
+
+
+    const removeAssignment = async (assignmentId: string) => {
+        await assignmentClient.deleteAssignment(assignmentId);
+        dispatch(deleteAssignment(assignmentId));
+    };
+
+   
     return (
         <div id="wd-assignments">
             <AssignmentControls cid={cid} />
@@ -87,15 +101,9 @@ export default function Assignments() {
                                             dialogTitle="Are you sure to delete："
                                             assignmentName={assignment.title}
                                             assignmentId={assignment._id}
-                                            deleteAssignment={(
-                                                assignmentID
-                                            ) => {
-                                                dispatch(
-                                                    deleteAssignment(
-                                                        assignmentID
-                                                    )
-                                                );
-                                            }}
+                                            deleteAssignment={(assignmentID) =>
+                                                removeAssignment(assignmentID)
+                                            }
                                         />
                                     </li>
                                 ))}

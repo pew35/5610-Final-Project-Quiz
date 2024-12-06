@@ -11,6 +11,7 @@ import QuizDetailScreen from "./Quiz/QuizDetailScreen";
 import QuizEditor from "./Quiz/QuizEditor";
 import QuizPreviewScreen from "./Quiz/QuizPreviewScreen";
 
+
 export default function Courses({ courses }: { courses: any[]; }) {
     const { cid } = useParams();
     const course =  courses.find((course) => course._id === cid);
@@ -44,5 +45,4 @@ export default function Courses({ courses }: { courses: any[]; }) {
             </div>
         </div>
       </div>
-);
-}
+  );}
