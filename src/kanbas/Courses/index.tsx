@@ -36,5 +36,3 @@ export default function Courses({ courses }: { courses: any[]; }) {
         </div>
       </div>
   );}
-  
-  
