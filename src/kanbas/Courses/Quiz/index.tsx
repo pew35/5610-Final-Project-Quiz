@@ -89,7 +89,7 @@ export default function Quiz() {
                                             </div>
                                             <div className="col wd-fg-color-gray ps-0 ms-2">
                                                 <Link
-                                                    to={`/Kanbas/Courses/${cid}/Quizzes/${quizzes?.id}`}
+                                                    to={`/Kanbas/Courses/${cid}/Quizzes/${quiz?.id}`}
                                                     className=" nav-link d-flex flex-row me-2 text-black bg-white"
                                                     style={{ fontSize: "16px", fontWeight: "bold" }}
                                                 >
