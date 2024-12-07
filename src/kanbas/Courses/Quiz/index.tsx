@@ -11,7 +11,7 @@ import JsonStringify from "../../../labs/Lab3/JsonStringify";
 
 import * as coursesClient from "../client";
 import * as quizzesClient from "./client";
-import {setQuizzes, addQuiz, deleteQuiz, updateQuiz} from "./reducer"
+import {setQuizzes, addQuiz, deleteQuiz, updateQuiz} from "./quizReducer"
 
 
 export default function Quiz() {
@@ -29,7 +29,7 @@ export default function Quiz() {
     // const [quizNumberOfQuestions, setQuizNumberOfQuestions] = useState<Number | null>(null);
     // const [quizTimeLimit, setQuizTimeLimit] = useState<Number | null>(null);
     
-    const { quizzes = [] } = useSelector((state: any) => state.quizReducer || {});
+    const { quizzes = [] } = useSelector((state: any) => state.quizReducerCreate || {});
     console.log("Quizzes in component:", quizzes);
     // set users
     const { currentUser } = useSelector((state: any) => state.accountReducer);
