@@ -6,7 +6,12 @@ import Assignments from "./Assignments";
 import AssignmentEditor from "./Assignments/Editor";
 import { FaAlignJustify } from "react-icons/fa";
 import PeopleTable from "./People/Table";
-import Quizzes from "./Quiz";
+import Quiz from "./Quiz";
+import QuizDetailScreen from "./Quiz/QuizDetailScreen";
+import QuizEditor from "./Quiz/QuizEditor";
+import QuizPreviewScreen from "./Quiz/QuizPreviewScreen";
+
+
 export default function Courses({ courses }: { courses: any[]; }) {
     const { cid } = useParams();
     const course =  courses.find((course) => course._id === cid);
@@ -30,11 +35,14 @@ export default function Courses({ courses }: { courses: any[]; }) {
                 <Route path="Assignments" element={<Assignments/>} />
                 <Route path="Assignments/:aid" element={<AssignmentEditor />} />
                 <Route path="People" element={<PeopleTable />} />
-                <Route path="Quizzes" element={<Quizzes/>} />
+                <Route path="Quizzes" element={<Quiz />} />
+                <Route path="Quizzes/:aid" element={<QuizDetailScreen />} />
+                <Route path="Quizzes/:aid/edit" element={<QuizEditor />} />
+                <Route path="Quizzes/:aid/edit/questions" element={<QuizEditor />} />
+                <Route path="Quizzes/:qid/preview" element={<QuizPreviewScreen />} />
+                <Route path="Quizzes/:qid/take" element={<QuizPreviewScreen />} />
                 </Routes>
             </div>
         </div>
       </div>
   );}
-  
-  
