@@ -69,6 +69,7 @@ export default function QuizEditor() {
     }));
   };
 
+  // need to modify for the backend
   const handleSaveQuizDetails = () => {
     console.log("Saving quiz details:", quizDetails);
 

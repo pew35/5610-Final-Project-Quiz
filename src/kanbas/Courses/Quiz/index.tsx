@@ -7,7 +7,6 @@ import { BsGripVertical } from "react-icons/bs";
 import GreenCheckmark from "./GreenCheckmark";
 import { MdOutlineRocketLaunch } from "react-icons/md";
 import { IoEllipsisVertical } from "react-icons/io5";
-import JsonStringify from "../../../labs/Lab3/JsonStringify";
 
 export default function Quiz() {
     const Quiz = [{
@@ -48,10 +47,10 @@ export default function Quiz() {
                 <input id="wd-search-quizzes" className=" form-control me-2" type="Search for Quiz"
                     placeholder="Search for quizzes" />
                 <Link id="wd-add-quizzes-btn" className="btn btn-lg btn-danger me-2 float-end"
-                    to={`/Kanbas/Courses/`}
+                    to={`/Kanbas/Courses`}
                 >
                     <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
-                    quizzes</Link>
+                    quiz</Link>
 
 
                 <button id="wd-Group" className="btn btn-lg btn me-2 float-end">
@@ -163,4 +162,3 @@ export default function Quiz() {
         </div>
     );
 }
-
