@@ -203,8 +203,4 @@ export default function QuizEditor() {
         </div>
         
     );
-    };
-function dispatch(arg0: { payload: any; type: "quizzes/setQuizzes"; }) {
-    throw new Error("Function not implemented.");
-}
-
+};
