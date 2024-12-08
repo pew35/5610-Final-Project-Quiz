@@ -7,7 +7,7 @@ import { BsGripVertical } from "react-icons/bs";
 import GreenCheckmark from "./GreenCheckmark";
 import { MdOutlineRocketLaunch } from "react-icons/md";
 import { IoEllipsisVertical } from "react-icons/io5";
-import JsonStringify from "../../../labs/Lab3/JsonStringify";
+
 
 export default function Quiz() {
     const Quiz = [{
@@ -36,6 +36,7 @@ export default function Quiz() {
         points: 40,
         numberOfQuestion: 5
     }]
+    
     const [quizzes, setQuizzes] = useState<any[]>(Quiz);
     const { cid } = useParams();
 
@@ -71,6 +72,7 @@ export default function Quiz() {
                         <BsGripVertical className="me-2 fs-2" />
                         Quizzes
                     </div>
+                    {JSON.stringify(quizzes)}
                     {quizzes && (
                         <ul className="list-group rounded-0">
                             {quizzes
