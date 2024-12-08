@@ -80,7 +80,7 @@ export default function QuizDetailScreen() {
                                         <span className="text-start my-1">{quiz.points}</span>
                                         <span className="text-start my-1">QUIZZES</span>
                                         <span className="text-start my-1">No</span>
-                                        <span className="text-start my-1">30 Minutes</span>
+                                        <span className="text-start my-1">{quiz.timeLimit} Minutes</span>
                                         <span className="text-start my-1">No</span>
                                         <span className="text-start my-1">Always</span>
                                         <span className="text-start my-1">Immediately</span>

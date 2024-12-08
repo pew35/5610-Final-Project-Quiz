@@ -9,6 +9,7 @@ export default function Signin() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const signin = async () => {
+        console.log("Client side signing in with credentials:", credentials)
         const user =  await client.signin(credentials);
         if (!user) return;
         dispatch(setCurrentUser(user));
