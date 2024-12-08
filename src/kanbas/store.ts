@@ -7,6 +7,7 @@ import coursesReducer from "./Dashboard/coursesReducer";
 import enrollmentsReducer from "./Dashboard/enrollmentsReducer";
 import quizReducer from "./Courses/Quiz/reducer";
 import quizReducerCreate from "./Courses/Quiz/quizReducer";
+import quizQuestion from "./Courses/Quiz/questionReducer";
 
 const store = configureStore({
   reducer: {
@@ -16,7 +17,8 @@ const store = configureStore({
     coursesReducer,
     enrollmentsReducer,
     quizReducer,
-    quizReducerCreate
+    quizReducerCreate,
+    quizQuestion
   },
 });
 

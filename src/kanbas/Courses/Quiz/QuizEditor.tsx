@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import QuizEditorMultipleChoice from "./QuizEditorType/QuizEditorMutlipleChoice";
 import QuizEditorTrueFalse from "./QuizEditorType/QuizEditorTrueFalse";
 import QuizEditorFillInTheBlank from "./QuizEditorType/QuizEditorFillInTheBlank";
 import { Link, useLocation } from "react-router-dom";
 
-
-import * as db from "../../Database";
+import * as quizzesClient from "./client";
+import {setQuizzes} from "./quizReducer"
+import { useDispatch, useSelector } from "react-redux";
 
 type Question = {
   id: number;
@@ -14,13 +15,27 @@ type Question = {
 };
 
 export default function QuizEditor() {
+    
     const {pathname} = useLocation();
-    const quizzes = db.quizzes;
+    // const quizzes = db.quizzes;
     const qid = pathname.split("/")[5]
     const parentPath = pathname.split('/').slice(0, -1).join('/');
-    console.log('parentPath', parentPath)
-    console.log('pathname', parentPath)
-    
+    const dispatch = useDispatch();
+
+    const [quiz, setQuiz] = useState<any>(null); // Local state to hold quiz data
+    const fetchQuiz = async () => {
+        try {
+          const quizData = await quizzesClient.findQuizById(qid as string);
+          console.log('Set quiz in QuizEditor', quizData)
+          setQuiz(quizData);
+        } catch (error) {
+          console.error("Failed to fetch quiz:", error);
+        }
+    };
+    useEffect(() => {
+        fetchQuiz();
+    }, [qid]);
+
     // this is all const related to adding new questions
     const [questions, setQuestions] = useState<Question[]>([]);
     const [savedQuestions, setSavedQuestions] = useState<Question[]>([]);
@@ -103,12 +118,7 @@ export default function QuizEditor() {
 
     return (
         <div>
-            {quizzes.filter((quiz: any) => parseInt(quiz.id) === parseInt(qid)).map((quiz: any) => (
-                <div id="wd-assignments-editor">
-                     <h2>{quiz.title}</h2>
-                    <hr/>
-                </div>
-            ))}
+            {quiz ? ( <h1>{quiz.title}</h1> ) : ( <p>Loading...</p> )}
 
             {savedQuestions.map((question, index) => (
                 <div key={question.id} className="mb-3 p-3 border rounded bg-light">
@@ -194,3 +204,7 @@ export default function QuizEditor() {
         
     );
     };
+function dispatch(arg0: { payload: any; type: "quizzes/setQuizzes"; }) {
+    throw new Error("Function not implemented.");
+}
+
