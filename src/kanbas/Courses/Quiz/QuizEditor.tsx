@@ -193,11 +193,7 @@ export default function QuizEditor() {
                             <button id="wd-add-Assignment-btn" className="btn btn-success me-2" onClick={() => saveQuestion(question.id)}> Add </button>
                             <button id="wd-add-Assignment-btn" className="btn btn-danger" onClick={() => deleteQuestion(question.id)} > Cancel </button>
                         </div>
-
-
                     </div>
-
-
                 ))}
             </div>
         </div>
