@@ -59,3 +59,10 @@ export const findQuestionsForQuiz = async (quizId: string) => {
     console.log("Data found for findQuestionsForQuiz: ", response.data)
     return response.data;
 }
+export const findPublishedQuizzesForCourse = async (courseId: string) => {
+    const response = await axios
+    // /api/courses/:courseId/quizzes
+        .get(`${COURSES_API}/${courseId}/quizzes?published=true`);
+    console.log("Data found for findPublishedQUizzesforcourse: ", response.data)
+    return response.data;
+};

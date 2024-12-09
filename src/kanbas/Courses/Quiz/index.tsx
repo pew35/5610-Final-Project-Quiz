@@ -1,7 +1,7 @@
 import { GrNotes } from "react-icons/gr";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import React, { useState , useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { FaCircle, FaPlus, FaTrash } from "react-icons/fa";
 import { BsGripVertical } from "react-icons/bs";
 import GreenCheckmark from "./GreenCheckmark";
@@ -11,41 +11,41 @@ import { IoEllipsisVertical } from "react-icons/io5";
 
 import * as coursesClient from "../client";
 import * as quizzesClient from "./client";
-import {setQuizzes, addQuiz, deleteQuiz, updateQuiz} from "./quizReducer"
+import { setQuizzes, addQuiz, deleteQuiz, updateQuiz } from "./quizReducer"
 
 
 export default function Quiz() {
-// <<<<<<< HEAD
-//     const Quiz = [{
-//         id: 1,
-//         title: "Q1",
-//         course: "RS101",
-//         detail: "",
-//         publish: true,
-//         attempts: 4,
-//         availableDate: "2024-10-01",
-//         availableUntilDate: "2024-12-30",
-//         dueDate: "2024-12-30",
-//         points: 50,
-//         numberOfQuestion: 5
-//     },
-//     {
-//         id: 2,
-//         title: "Q2",
-//         detail: "",
-//         course: "RS101",
-//         publish: false,
-//         attempts: 4,
-//         availableDate: "2024-11-30",
-//         availableUntilDate: "2024-12-05",
-//         dueDate: "2024-12-01",
-//         points: 40,
-//         numberOfQuestion: 5
-//     }]
-    
-//     const [quizzes, setQuizzes] = useState<any[]>(Quiz);
-// =======
-// >>>>>>> fe3b581425e08d539efd0dc7927ce16b7b5ee1da
+    // <<<<<<< HEAD
+    //     const Quiz = [{
+    //         id: 1,
+    //         title: "Q1",
+    //         course: "RS101",
+    //         detail: "",
+    //         publish: true,
+    //         attempts: 4,
+    //         availableDate: "2024-10-01",
+    //         availableUntilDate: "2024-12-30",
+    //         dueDate: "2024-12-30",
+    //         points: 50,
+    //         numberOfQuestion: 5
+    //     },
+    //     {
+    //         id: 2,
+    //         title: "Q2",
+    //         detail: "",
+    //         course: "RS101",
+    //         publish: false,
+    //         attempts: 4,
+    //         availableDate: "2024-11-30",
+    //         availableUntilDate: "2024-12-05",
+    //         dueDate: "2024-12-01",
+    //         points: 40,
+    //         numberOfQuestion: 5
+    //     }]
+
+    //     const [quizzes, setQuizzes] = useState<any[]>(Quiz);
+    // =======
+    // >>>>>>> fe3b581425e08d539efd0dc7927ce16b7b5ee1da
     const { cid } = useParams();
     const dispatch = useDispatch();
 
@@ -59,7 +59,7 @@ export default function Quiz() {
     // const [quizDueDate, setQuizDueDate] = useState("");
     // const [quizNumberOfQuestions, setQuizNumberOfQuestions] = useState<Number | null>(null);
     // const [quizTimeLimit, setQuizTimeLimit] = useState<Number | null>(null);
-    
+
     const { quizzes = [] } = useSelector((state: any) => state.quizReducerCreate || {});
     console.log("Quizzes in component:", quizzes);
     // set users
@@ -68,12 +68,30 @@ export default function Quiz() {
 
     // this is to fetch all the assignments for a course
     const fetchQuizzes = async () => {
-        const quizzes = await coursesClient.findQuizzesForCourse(cid as string);
-        dispatch(setQuizzes(quizzes));
+        if (currentUser.role === "STUDENT") {
+            const quizzes = await coursesClient.findPublishedQuizzesForCourse(cid as string);
+            dispatch(setQuizzes(quizzes));
+        }
+        else {
+            const quizzes = await coursesClient.findQuizzesForCourse(cid as string);
+            dispatch(setQuizzes(quizzes));
+        }
     };
+    const publishQuiz = async (quiz: any) => {
+        const savedQuiz = await quizzesClient.updateQuiz({ ...quiz, publish: !quiz.publish });
+        dispatch(updateQuiz(savedQuiz));
+
+    };
+    const removeQuiz = async (quizId: string) => {
+        await quizzesClient.deleteQuiz(quizId);
+        dispatch(deleteQuiz(quizId));
+    };
+
+    
     useEffect(() => {
         fetchQuizzes();
-      }, []);
+    }, [quizzes]);
+
     console.log("Quizzes after set: ", quizzes)
 
     return (
@@ -102,44 +120,48 @@ export default function Quiz() {
                         <BsGripVertical className="me-2 fs-2" />
                         Quizzes
                     </div>
-                    {JSON.stringify(quizzes)}
+
                     {quizzes && (
                         <ul className="list-group rounded-0">
                             {quizzes.map((quiz: any) => (
-                                    <li className="wd-quiz list-group-item p-3 ps-1">
+                                <li className="wd-quiz list-group-item p-3 ps-1">
 
-                                        <div className="row">
-                                            <div className="col-auto "
-                                                style={{ margin: "auto" }}
+                                    <div className="row">
+                                        <div className="col-auto "
+                                            style={{ margin: "auto" }}
+                                        >
+                                            <MdOutlineRocketLaunch className=" text-success fs-3 mg-left-3" />
+                                        </div>
+                                        <div className="col wd-fg-color-gray ps-0 ms-2">
+                                            <Link
+                                                to={`/Kanbas/Courses/${cid}/Quizzes/${quiz._id}`}
+                                                className=" nav-link d-flex flex-row me-2 text-black bg-white"
+                                                style={{ fontSize: "21px" , lineHeight: "1.0"}}
                                             >
-                                                <MdOutlineRocketLaunch className=" text-success fs-3 mg-left-3" />
-                                            </div>
-                                            <div className="col wd-fg-color-gray ps-0 ms-2">
-                                                <Link
-                                                    to={`/Kanbas/Courses/${cid}/Quizzes/${quiz._id}`}
-                                                    className=" nav-link d-flex flex-row me-2 text-black bg-white"
-                                                    style={{ fontSize: "16px", fontWeight: "bold" }}
-                                                >
-                                                    {quiz.title}
-                                                </Link>
-                                                <span style={{ fontSize: "17px", lineHeight: "1.0" }}>
-                                                    {new Date() < new Date(quiz.availableDate)
-                                                        ? "Not available until "
-                                                        : new Date() >= new Date(quiz.availableDate) &&
-                                                            new Date() <= new Date(quiz.availableUntilDate)
-                                                            ? "Available"
-                                                            : "Closed"}
-                                                </span>
-                                                <span style={{ fontSize: "17px", lineHeight: "1.0" }} className="text-muted">
-                                                    {new Date() < new Date(quiz.availableDate) ? quiz.availableDate : null}
-                                                </span>
-                                                <span style={{ fontSize: "17px", lineHeight: "1.0" }}>
-                                                    {` | Due`}
-                                                </span>
-                                                <span style={{ fontSize: "16px", lineHeight: "1.0" }} className="text-muted">
-                                                    {` ${quiz.dueDate}  |  ${quiz.points} pts  |   ${quiz.numberOfQuestion} Questions`}
-                                                </span>
-                                            </div>
+                                                {quiz.title}
+                                            </Link>
+                                            <span style={{ fontSize: "17px", lineHeight: "1.0" }}>
+                                                {new Date() < new Date(quiz.availableDate)
+                                                    ? "Not available until "
+                                                    : new Date() >= new Date(quiz.availableDate) &&
+                                                        new Date() <= new Date(quiz.availableUntilDate)
+                                                        ? "Available"
+                                                        : "Closed"}
+                                            </span>
+                                            <span style={{ fontSize: "17px", lineHeight: "1.0" }} className="text-muted">
+                                                {new Date() < new Date(quiz.availableDate) ? quiz.availableDate : null}
+                                            </span>
+                                            <span style={{ fontSize: "17px", lineHeight: "1.0" }}>
+                                                {` | Due`}
+                                            </span>
+                                            <span style={{ fontSize: "16px", lineHeight: "1.0" }} className="text-muted">
+                                                {` ${quiz.dueDate}  |  ${quiz.points} pts  |   ${quiz.numberOfQuestion} Questions`}
+                                            </span>
+                                            <span>
+                                                {`2/1`}
+                                            </span>
+                                        </div>
+                                        {canEdit && (
                                             <div
                                                 className="col-auto"
                                                 style={{ margin: "auto" }}
@@ -154,24 +176,24 @@ export default function Quiz() {
 
 
                                                     <ul className="dropdown-menu">
-                                                        <li
-                                                            className="dropdown-item"
-                                                            style={{ padding: "8px 15px", cursor: "pointer" }}
-                                                            onClick={() => alert("Edit")}
-                                                        >
+                                                        <Link to={`/Kanbas/Courses/${cid}/Quizzes/${quiz._id}/edit`}
+                                                            className="text-decoration-none text-dark dropdown-item"
+                                                            style={{ padding: "8px 15px", cursor: "pointer" }}>
                                                             Edit
-                                                        </li>
+                                                        </Link>
+
                                                         <li
                                                             className="dropdown-item"
                                                             style={{ padding: "8px 15px", cursor: "pointer" }}
                                                             onClick={() => alert("Delete")}
+                                                            // onClick={() => removeQuiz(quiz._id)}!!!!!!!!!!!!!! Dont forget to uncomment this line
                                                         >
                                                             Delete
                                                         </li>
                                                         <li
                                                             className="dropdown-item"
                                                             style={{ padding: "8px 15px", cursor: "pointer" }}
-                                                            onClick={() => alert("Publish/Unpublish")}
+                                                            onClick={() => publishQuiz(quiz)}
                                                         >
                                                             {quiz.publish ? "Unpublish " : "Publish "}
                                                         </li>
@@ -180,9 +202,10 @@ export default function Quiz() {
                                                 </div>
 
                                             </div>
-                                        </div>
-                                    </li>
-                                ))}
+                                        )}
+                                    </div>
+                                </li>
+                            ))}
                         </ul>
                     )}
                 </li>
