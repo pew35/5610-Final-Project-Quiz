@@ -1,5 +1,5 @@
 import { useLocation, Link, useParams, useNavigate } from "react-router-dom";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import { IoMdArrowDropright } from "react-icons/io";
@@ -9,32 +9,49 @@ import { FaCheck } from "react-icons/fa6";
 import { GoQuestion } from "react-icons/go";
 import { MdModeEdit } from "react-icons/md";
 import { setQuizSubmitted } from "./reducer";
-import * as db from "../../Database/";
+import * as quizClient from "./client"
 
 export default function QuizPreviewScreen() {
     const { pathname } = useLocation();
     const qid = pathname.split("/")[5]
     const { cid } = useParams();
     const { currentUser } = useSelector((state: any) => state.accountReducer);
-    const quizzes = db.quizzes;
-    const questions = db.questions;
-    const quiz = quizzes.find((q: any) => q.id === parseInt(qid, 10));
+    const [quizzes, setQuizzes] = useState<any[]>([]);
+    const [questions, setQuestions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const filteredQuestions = questions.filter((q: any) => q.quizId === qid);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [quizStarted, setQuizStarted] = useState(false);
-    const currentQuestion = filteredQuestions[currentQuestionIndex];
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const handleStartQuiz = () => {
         if (!quizStarted) {
-            setQuizStarted(true); 
+            setQuizStarted(true);
         }
     };
 
+    const fetchQuizData = async () => {
+        try {
+            setLoading(true);
+            const quiz = await quizClient.findQuizById(qid);
+            const quizQuestions = await quizClient.findQuestionsByQuiz(qid);
+            setQuizzes([quiz]);
+            setQuestions(quizQuestions);
+        } catch (error) {
+            console.error("Error fetching quiz data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    useEffect(() => {
+        fetchQuizData();
+    }, [qid]);
+
     const handleNext = () => {
-        if (currentQuestionIndex < filteredQuestions.length - 1) {
+        if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
         }
     };
@@ -43,15 +60,28 @@ export default function QuizPreviewScreen() {
         handleStartQuiz();
         setAnswers({
             ...answers,
-            [currentQuestion._id]: value,
+            [questions[currentQuestionIndex]._id]: value,
         });
     };
 
-    const handleSubmit = () => {
-        dispatch(setQuizSubmitted({ quizId: qid }));
-        navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}`)
-        alert("Quiz submitted!");
+    const handleSubmit = async () => {
+        try {
+            await quizClient.createAttempt( { answers });
+            dispatch(setQuizSubmitted({ quizId: qid }));
+            navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}`);
+            alert("Quiz submitted!");
+        } catch (error) {
+            console.error("Error submitting quiz:", error);
+            alert("Failed to submit quiz. Please try again.");
+        }
     };
+    
+    const currentQuestion = questions[currentQuestionIndex];
+    const quiz = quizzes[0];
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="container mt-4">
