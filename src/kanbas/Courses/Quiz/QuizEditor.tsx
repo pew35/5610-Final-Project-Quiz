@@ -124,23 +124,25 @@ export default function QuizEditor(
                         } }
                     />
                     );
-            // case "True/False":
-            //     return ( 
-            //         <QuizEditorTrueFalse
-            //         question={question}
-            //         onChange={(updatedAnswer) => {
-            //             updateQuestionField(question.id, "answers", [updatedAnswer]);
-            //         }}/> 
-            //     );
-            // case "Fill in the Blank":
-            //     return (
-            //     <QuizEditorFillInTheBlank 
-            //     question={question}
-            //     onChange={(updatedText, updatedAnswers) => {
-            //         updateQuestionField(question.id, "questions", updatedText);
-            //         updateQuestionField(question.id, "answers", updatedAnswers);
-            //         }}/>
-            //     );
+            case "True/False":
+                return ( 
+                    <QuizEditorTrueFalse
+                    question={question}
+                    onChange={(updatedQuestions, updatedOptions, updatedAnswers) => {
+                        updateQuestionField(question.id, "questions", updatedQuestions);
+                        updateQuestionField(question.id, "options", updatedOptions);
+                        updateQuestionField(question.id, "answers", updatedAnswers);
+                    }}/> 
+                );
+            case "Fill in the Blank":
+                return (
+                <QuizEditorFillInTheBlank 
+                question={question}
+                onChange={(updatedText, updatedAnswers) => {
+                    updateQuestionField(question.id, "questions", updatedText);
+                    updateQuestionField(question.id, "answers", updatedAnswers);
+                    }}/>
+                );
             default:
                 return null;
         }
