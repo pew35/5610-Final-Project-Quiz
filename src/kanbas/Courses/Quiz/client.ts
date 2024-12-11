@@ -37,3 +37,18 @@ export const findAttemptsAnswers = async (attemptId: string) => {
     const response = await axios.get(`/api/attempts/${attemptId}/attemptAnswer`);
     return response.data;
 };
+
+export const createQuestionForQuiz = async (question: any) => {
+    const { data } = await axios.post(
+        `${QUIZZES_API}/${question.qid}/questions`, 
+        question
+    );
+    return data;
+};
+
+export const deleteQuestionFromQuiz = async (questionId: string) => {
+    const { data } = await axios.delete(
+        `${QUIZZES_API}/questions/${questionId}`
+    );
+    return data;
+};
