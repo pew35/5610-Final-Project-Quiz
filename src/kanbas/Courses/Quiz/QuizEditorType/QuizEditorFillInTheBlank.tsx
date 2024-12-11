@@ -1,15 +1,39 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
-export default function QuizEditorFillInTheBlank() {
-    const [array, setArray] = useState<any>([])
-    // value from users' input
+export default function QuizEditorFillInTheBlank({
+    question,
+    onChange
+}: 
+{
+    question: { id: number; questions: string; answers: string[] };
+    onChange: (questions: string, answers: string[]) => void;
+}
+) {
+
+    const [localQuestion, setLocalQuestion] = useState(question.questions || "");
+    const [localAnswers, setLocalAnswers] = useState<string[]>(question.answers || []);
     const [inputValue, setInputValue] = useState("");
 
-    const addElement = () => {
-        if (inputValue.trim() !== "") {
-          setArray([...array, inputValue]); // Add input value to the array
-          setInputValue(""); // Clear input field after adding
+    // Send updates to the parent whenever localQuestion, localOptions, or answers change
+    useEffect(() => {
+        onChange(localQuestion, localAnswers);
+    }, 
+    [localQuestion, localAnswers]);
+    
+    const addAnswers = () => {
+        if (inputValue.trim()) {
+            setLocalAnswers([...localAnswers, inputValue.trim()]);
+            setInputValue("");
         }
+    };
+
+    const removeAnswer = (index: number) => {
+        const updatedOptions = localAnswers.filter((_, i) => i !== index);
+        setLocalAnswers(updatedOptions);
+        
+        // Remove any selected answers tied to this option
+        const updatedAnswers = localAnswers.filter((answer) => answer !== localAnswers[index]);
+        setLocalAnswers(updatedAnswers);
     };
 
 
@@ -24,29 +48,32 @@ export default function QuizEditorFillInTheBlank() {
                 id="question_input" 
                 className="form-control" 
                 placeholder="Type your question here"
-                // onChange={(e) => setInputValue(e.target.value)}
+                value={localQuestion}
+                onChange={(e) => setLocalQuestion(e.target.value)}
             ></input><br/>
             
             <h5 className="fw-bold">Answers:</h5>
             <div className="list-group-item d-flex justify-content-between">
-                <input type="text" id="question_input" className="form-control me-2" 
+                <input type="text"
+                id="question_input"
+                className="form-control me-2" 
                 placeholder="Type your answers here" 
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}/>
                 
-                <button onClick={addElement} className="btn btn-success"> Add Answer </button>
+                <button onClick={addAnswers} className="btn btn-success"> Add Answer </button>
             </div>
             <br/>
             <br/>
 
             <ul className="list-group">
-                {array.map((item: any, index: any) => (
+                {localAnswers.map((item: any, index: any) => (
                 <li key={index}
                     // showing all the answers
                     className="list-group-item d-flex justify-content-between align-items-center" >
                         {item} 
                         <button className="btn btn-danger btn-sm" 
-                        onClick={() => setArray(array.filter((_: any, i:any) => i !== index)) } > 
+                        onClick={() => removeAnswer } > 
                         Delete
                         </button>
                 </li>
