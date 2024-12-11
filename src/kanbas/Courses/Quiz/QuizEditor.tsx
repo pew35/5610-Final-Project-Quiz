@@ -83,11 +83,12 @@ export default function QuizEditor(
             const savedData = await quizzesClient.createQuestionsForQuiz(questionToSave);
             console.log("successfully save question to db", savedData);
             setSavedQuestions([questionToSave, ...savedQuestions]); // Add saved question to the top
-            deleteQuestion(_id); // Remove from editable questions
+            // deleteQuestion(_id); // Remove from editable questions
         }
     };
 
-    const deleteQuestion = (_id: string) => {
+    const cancelQuestion = async (_id: string) => {
+        // call API to delete question
         setQuestions((prevQuestions) =>
           prevQuestions.filter((question) => question._id !== _id)
         );
@@ -103,7 +104,8 @@ export default function QuizEditor(
         }
     };
 
-    const deleteSavedQuestion = (_id: string) => {
+    const deleteSavedQuestion = async (_id: string) => {
+        await quizzesClient.deleteQuestions(quizId, _id)
         setSavedQuestions((prevSavedQuestions) =>
           prevSavedQuestions.filter((question) => question._id !== _id)
         );
@@ -234,7 +236,7 @@ export default function QuizEditor(
 
                         <div id="wd-Assignment-controls" className="text-nowrap ">
                             <button id="wd-add-Assignment-btn" className="btn btn-success me-2" onClick={() => saveQuestion(question._id)}> Add </button>
-                            <button id="wd-add-Assignment-btn" className="btn btn-danger" onClick={() => deleteQuestion(question._id)} > Cancel </button>
+                            <button id="wd-add-Assignment-btn" className="btn btn-danger" onClick={() => cancelQuestion(question._id)} > Cancel </button>
                         </div>
                     </div>
                 ))}

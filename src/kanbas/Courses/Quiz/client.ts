@@ -49,8 +49,8 @@ export const createQuestionsForQuiz = async ( question: any) => {
     return response.data;
 }
 
-export const deleteQuestions = async (questionsId: string) => {
+export const deleteQuestions = async (quizId: string, questionsId: string) => {
     console.log("Delete question id: ", questionsId)
-    const response = await axiosWithCredentials.delete(`${QUESTIONS_API}/${questionsId}`);
+    const response = await axiosWithCredentials.delete(`${QUIZZES_API}/${quizId}/questions/${questionsId}`);
     return response.data;
 };
