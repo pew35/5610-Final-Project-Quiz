@@ -9,6 +9,7 @@ export default function QuizEditorTrueFalse({
     onChange: (questions: string, options: string[], answers: string[]) => void;
 })
 {
+    const fixedOptions = ["True", "False"];
     const [localQuestion, setLocalQuestion] = useState(question.questions || "");
     const [localOptions, setLocalOptions] = useState<string[]>(question.options || []);
     const [localAnswers, setLocalAnswers] = useState<string[]>(question.answers || []);
@@ -20,8 +21,10 @@ export default function QuizEditorTrueFalse({
     }, 
     [localQuestion, localOptions, localAnswers]);
 
-    const addOption = () => {
-        setLocalOptions(["True", "False"])
+    const handleAnswerSelection = (selectedAnswer: string) => {
+        setLocalAnswers([selectedAnswer]);  // Allow only one answer selection
+        onChange(question.questions, fixedOptions, [selectedAnswer]);
+        setLocalOptions(fixedOptions);
     };
 
     return (
@@ -40,28 +43,22 @@ export default function QuizEditorTrueFalse({
             
             <h5 className="fw-bold">Answers:</h5>
             <div className="col-sm-10">
-                <div className="form-check">
-                    <input 
-                    className="form-check-input" 
-                    type="radio" name="gridRadios" 
-                    id="r3" value="True" 
-                    checked={localAnswers.includes("True")} 
-                    onChange={() => setLocalAnswers(["True"])}
+            {fixedOptions.map((option) => (
+                <div key={option} className="form-check">
+                    <input
+                        className="form-check-input"
+                        type="radio"
+                        name={`grid-${question.id}`}
+                        id={`r-${option}`}
+                        value={option}
+                        checked={localAnswers.includes(option)}
+                        onChange={() => handleAnswerSelection(option)}
                     />
-                    <label className="form-check-label" htmlFor="r3"> True </label>
+                    <label className="form-check-label" htmlFor={`r-${option}`}>
+                        {option}
+                    </label>
                 </div>
-                <div className="form-check">
-                    <input 
-                    className="form-check-input"
-                     type="radio" 
-                     name="gridRadios" 
-                     id="r4" 
-                     value="False" 
-                     checked={localAnswers.includes("False")}
-                     onChange={() => setLocalAnswers(["False"])}
-                     />
-                    <label className="form-check-label" htmlFor="r4"> False </label> 
-                </div>
+            ))}
             </div>
         </div>
     )
