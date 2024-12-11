@@ -6,13 +6,13 @@ export default function QuizEditorMultipleChoice({
     onChange
 }: 
 {
-    question: { id: number; questions: string; options: string[]; answers: string[] };
-    onChange: (questions: string, options: string[], answers: string[]) => void;
+    question: { _id: string; question: string; Option: string[]; answer: string[] };
+    onChange: (questions: string, Option: string[], answer: string[]) => void;
 }) 
 {
-    const [localQuestion, setLocalQuestion] = useState(question.questions || "");
-    const [localOptions, setLocalOptions] = useState<string[]>(question.options || []);
-    const [localAnswers, setLocalAnswers] = useState<string[]>(question.answers || []);
+    const [localQuestion, setLocalQuestion] = useState(question.question || "");
+    const [localOptions, setLocalOptions] = useState<string[]>(question.Option || []);
+    const [localAnswers, setLocalAnswers] = useState<string[]>(question.answer || []);
     const [inputValue, setInputValue] = useState("");
     
     // Send updates to the parent whenever localQuestion, localOptions, or answers change

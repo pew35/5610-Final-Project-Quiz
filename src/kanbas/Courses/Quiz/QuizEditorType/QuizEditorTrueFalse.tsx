@@ -5,14 +5,14 @@ export default function QuizEditorTrueFalse({
     onChange
 }: 
 {
-    question: { id: number; questions: string; options: string[]; answers: string[] };
-    onChange: (questions: string, options: string[], answers: string[]) => void;
+    question: { _id: string; question: string; Option: string[]; answer: string[] };
+    onChange: (questions: string, Option: string[], answer: string[]) => void;
 })
 {
     const fixedOptions = ["True", "False"];
-    const [localQuestion, setLocalQuestion] = useState(question.questions || "");
-    const [localOptions, setLocalOptions] = useState<string[]>(question.options || []);
-    const [localAnswers, setLocalAnswers] = useState<string[]>(question.answers || []);
+    const [localQuestion, setLocalQuestion] = useState(question.question || "");
+    const [localOptions, setLocalOptions] = useState<string[]>(question.Option || []);
+    const [localAnswers, setLocalAnswers] = useState<string[]>(question.answer || []);
     const [inputValue, setInputValue] = useState("");
 
     // Send updates to the parent whenever localQuestion, localOptions, or answers change
@@ -23,7 +23,7 @@ export default function QuizEditorTrueFalse({
 
     const handleAnswerSelection = (selectedAnswer: string) => {
         setLocalAnswers([selectedAnswer]);  // Allow only one answer selection
-        onChange(question.questions, fixedOptions, [selectedAnswer]);
+        onChange(question.question, fixedOptions, [selectedAnswer]);
         setLocalOptions(fixedOptions);
     };
 
@@ -48,7 +48,7 @@ export default function QuizEditorTrueFalse({
                     <input
                         className="form-check-input"
                         type="radio"
-                        name={`grid-${question.id}`}
+                        name={`grid-${question._id}`}
                         id={`r-${option}`}
                         value={option}
                         checked={localAnswers.includes(option)}
