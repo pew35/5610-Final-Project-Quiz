@@ -96,24 +96,20 @@ export default function QuizEditor(
       };
     
       // need to modify for the backend
-      const handleSaveQuizDetails = () => {
-        console.log("Saving quiz details:", quizDetails);
-    
-        fetch("/api/quiz/save", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(quizDetails),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            console.log("Quiz saved successfully:", data);
-          })
-          .catch((error) => {
+      const handleSaveQuizDetails = async () => {
+        try {
+            const updatedQuiz = await quizzesClient.updateQuiz({
+                _id: qid,
+                ...quizDetails,
+                questions: [...questions, ...savedQuestions]
+            });
+            console.log("Quiz saved successfully:", updatedQuiz);
+            // Optionally refresh the quiz data
+            await fetchQuiz();
+        } catch (error) {
             console.error("Error saving quiz:", error);
-          });
-      };
+        }
+    };
 
 
 
@@ -155,19 +151,28 @@ export default function QuizEditor(
         );
     };
 
-    const saveQuestion = (id: number) => {
+    const saveQuestion = async (id: number) => {
         const questionToSave = questions.find((q) => q.id === id);
         if (questionToSave) {
-            console.log(questionToSave)
-          setSavedQuestions([questionToSave, ...savedQuestions]); // Add saved question to the top
-          deleteQuestion(id); // Remove from editable questions
+            try {
+                const savedQuestion = await quizzesClient.createQuestionForQuiz(questionToSave);
+                setSavedQuestions([savedQuestion, ...savedQuestions]);
+                deleteQuestion(id);
+            } catch (error) {
+                console.error("Error saving question:", error);
+            }
         }
     };
 
-    const deleteQuestion = (id: number) => {
-        setQuestions((prevQuestions) =>
-          prevQuestions.filter((question) => question.id !== id)
-        );
+    const deleteQuestion = async (id: number) => {
+        try {
+            await quizzesClient.deleteQuestionFromQuiz(id.toString());
+            setQuestions(prevQuestions => 
+                prevQuestions.filter(question => question.id !== id)
+            );
+        } catch (error) {
+            console.error("Error deleting question:", error);
+        }
     };
 
     const editQuestion = (id: number) => {
@@ -180,10 +185,15 @@ export default function QuizEditor(
         }
       };
 
-      const deleteSavedQuestion = (id: number) => {
-        setSavedQuestions((prevSavedQuestions) =>
-          prevSavedQuestions.filter((question) => question.id !== id)
-        );
+      const deleteSavedQuestion = async (id: number) => {
+        try {
+            await quizzesClient.deleteQuestionFromQuiz(id.toString());
+            setSavedQuestions(prevSavedQuestions =>
+                prevSavedQuestions.filter(question => question.id !== id)
+            );
+        } catch (error) {
+            console.error("Error deleting saved question:", error);
+        }
       };
 
     // Render fields based on question type
@@ -231,6 +241,22 @@ export default function QuizEditor(
           )
         );
       };
+
+    // Add function to fetch questions when quiz loads
+    const fetchQuestions = async () => {
+        try {
+            const questions = await quizzesClient.findQuestionsByQuiz(qid);
+            setSavedQuestions(questions);
+        } catch (error) {
+            console.error("Error fetching questions:", error);
+        }
+    };
+
+    // Update useEffect to fetch questions along with quiz
+    useEffect(() => {
+        fetchQuiz();
+        fetchQuestions();
+    }, [qid]);
 
     return (
         <div>
