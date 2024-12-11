@@ -5,24 +5,31 @@ import QuizEditorFillInTheBlank from "./QuizEditorType/QuizEditorFillInTheBlank"
 import { Link, useLocation } from "react-router-dom";
 
 import * as quizzesClient from "./client";
-import {setQuizzes} from "./quizReducer"
 import { useDispatch, useSelector } from "react-redux";
 
 type Question = {
   id: number;
-  text: string;
+  cid: string;
+  qid: string;
+  title: string;
   type: string;
+  questions: string,
+  options: string[],
+  answers: string[],
+  points: number
 };
 
-export default function QuizEditor() {
+export default function QuizEditor(
+) {
     
     const {pathname} = useLocation();
-    // const quizzes = db.quizzes;
     const qid = pathname.split("/")[5]
+    const cid = pathname.split("/")[3]
     const parentPath = pathname.split('/').slice(0, -1).join('/');
     const dispatch = useDispatch();
 
     const [quiz, setQuiz] = useState<any>(null); // Local state to hold quiz data
+    
     const fetchQuiz = async () => {
         try {
           const quizData = await quizzesClient.findQuizById(qid as string);
@@ -46,9 +53,15 @@ export default function QuizEditor() {
     // Function to add a new question
     const addQuestion = () => {
         const newQuestion: Question = {
-        id: question_length,
-        text: "",
-        type: "Multiple Choice", // Default question type
+            id: question_length,
+            qid: qid,
+            cid: cid,
+            title: "",
+            type: "Multiple Choice",
+            questions: "",
+            options: [],
+            answers: [],
+            points: 0,
         };
         setQuestions([...questions, newQuestion]);
     };
@@ -69,6 +82,7 @@ export default function QuizEditor() {
     const saveQuestion = (id: number) => {
         const questionToSave = questions.find((q) => q.id === id);
         if (questionToSave) {
+            console.log(questionToSave)
           setSavedQuestions([questionToSave, ...savedQuestions]); // Add saved question to the top
           deleteQuestion(id); // Remove from editable questions
         }
@@ -97,24 +111,48 @@ export default function QuizEditor() {
       };
 
     // Render fields based on question type
-    const renderQuestionTypeFields = (question: Question) => {
+    const renderQuestionTypeFields = (question: Question, updateQuestionField: (id: number, key: keyof Question, value: any) => void ) => {
         switch (question.type) {
             case "Multiple Choice":
                 return (
-                    <QuizEditorMultipleChoice/>
+                    <QuizEditorMultipleChoice
+                        question = {question}
+                        onChange = { (updatedQuestions, updatedOptions, updatedAnswers) => {
+                            updateQuestionField(question.id, "questions", updatedQuestions);
+                            updateQuestionField(question.id, "options", updatedOptions);
+                            updateQuestionField(question.id, "answers", updatedAnswers);
+                        } }
+                    />
                     );
-            case "True/False":
-                return ( 
-                    <QuizEditorTrueFalse/> 
-                );
-            case "Fill in the Blank":
-                return (
-                <QuizEditorFillInTheBlank />
-                );
+            // case "True/False":
+            //     return ( 
+            //         <QuizEditorTrueFalse
+            //         question={question}
+            //         onChange={(updatedAnswer) => {
+            //             updateQuestionField(question.id, "answers", [updatedAnswer]);
+            //         }}/> 
+            //     );
+            // case "Fill in the Blank":
+            //     return (
+            //     <QuizEditorFillInTheBlank 
+            //     question={question}
+            //     onChange={(updatedText, updatedAnswers) => {
+            //         updateQuestionField(question.id, "questions", updatedText);
+            //         updateQuestionField(question.id, "answers", updatedAnswers);
+            //         }}/>
+            //     );
             default:
                 return null;
         }
     };
+
+    const updateQuestionField = (id: number, key: keyof Question, value: any) => {
+        setQuestions((prevQuestions) =>
+          prevQuestions.map((question) =>
+            question.id === id ? { ...question, [key]: value } : question
+          )
+        );
+      };
 
     return (
         <div>
@@ -124,7 +162,7 @@ export default function QuizEditor() {
                 <div key={question.id} className="mb-3 p-3 border rounded bg-light">
                 <h5>Question {question.id}</h5>
                     <p><strong>Type:</strong> {question.type}</p>
-                    <p><strong>Text:</strong> {question.text}</p>
+                    <p><strong>Question:</strong> {question.questions}</p>
                     <button className="btn btn-warning me-2" onClick={() => editQuestion(question.id)}> Edit </button>
                     <button className="btn btn-danger" onClick={() => deleteSavedQuestion(question.id)}> Delete </button>
                 </div>
@@ -145,7 +183,9 @@ export default function QuizEditor() {
                                             id="questionTitle" 
                                             className="form-control" 
                                             placeholder="Easy Question"
-                                            // onChange={(e) => setInputValue(e.target.value)}
+                                            onChange={(e) =>
+                                                updateQuestionField(question.id, "title", e.target.value)
+                                            }
                                         ></input>
                                     </div>
 
@@ -174,7 +214,9 @@ export default function QuizEditor() {
                                             id="points" 
                                             placeholder="0" 
                                             min="0"
-                                            // value={quizName} onChange={(e) => setQuizName(e.target.value)} 
+                                            onChange={(e) =>
+                                                updateQuestionField(question.id, "points", parseInt(e.target.value) || 0)
+                                            }
                                         />
                                     </div>
                                 </div>
@@ -184,7 +226,7 @@ export default function QuizEditor() {
                     
 
                     {/* render question based on selected type */}
-                    {renderQuestionTypeFields(question)}
+                    {renderQuestionTypeFields(question, updateQuestionField)}
                     
                         <br/>
                         <hr/>
@@ -197,6 +239,5 @@ export default function QuizEditor() {
                 ))}
             </div>
         </div>
-        
     );
 };

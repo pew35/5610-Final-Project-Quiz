@@ -1,65 +1,98 @@
-import { useState } from "react"
+import { useState, useEffect } from "react";
 
-export default function QuizEditorMultipleChoice() {
-    const [array, setArray] = useState<any>([])
-    // value from users' input
+
+export default function QuizEditorMultipleChoice({
+    question,
+    onChange
+}: 
+{
+    question: { id: number; questions: string; options: string[]; answers: string[] };
+    onChange: (questions: string, options: string[], answers: string[]) => void;
+}) 
+{
+    const [localQuestion, setLocalQuestion] = useState(question.questions || "");
+    const [localOptions, setLocalOptions] = useState<string[]>(question.options || []);
+    const [localAnswers, setLocalAnswers] = useState<string[]>(question.answers || []);
     const [inputValue, setInputValue] = useState("");
-
-    const addElement = () => {
-        if (inputValue.trim() !== "") {
-          setArray([...array, inputValue]); // Add input value to the array
-          setInputValue(""); // Clear input field after adding
+    
+    // Send updates to the parent whenever localQuestion, localOptions, or answers change
+    useEffect(() => {
+        onChange(localQuestion, localOptions, localAnswers);
+    }, 
+    [localQuestion, localOptions, localAnswers]);
+    
+    const addOption = () => {
+        if (inputValue.trim()) {
+            setLocalOptions([...localOptions, inputValue.trim()]);
+            setInputValue("");
         }
     };
-
+    
+    const removeOption = (index: number) => {
+        const updatedOptions = localOptions.filter((_, i) => i !== index);
+        setLocalOptions(updatedOptions);
+        
+        // Remove any selected answers tied to this option
+        const updatedAnswers = localAnswers.filter((answer) => answer !== localOptions[index]);
+        setLocalAnswers(updatedAnswers);
+    };
+    
+    const toggleAnswerSelection = (answer: string) => {
+        if (localAnswers.includes(answer)) {
+            setLocalAnswers(localAnswers.filter((ans) => ans !== answer));
+        } else 
+        {
+            setLocalAnswers([...localAnswers, answer]);
+        }
+    };
     
     return (
-        <div>
-            <hr/>
-            <span>Enter your question and multiple answers, then select the one correct answer.</span><br/><br/>
-            <h5 className="fw-bold">Question:</h5><br/>
-            
-            <input type="text"
-                id="question_input" 
-                className="form-control" 
-                placeholder="Type your question here"
-                // onChange={(e) => setInputValue(e.target.value)}
-            ></input><br/>
-            
-            <h5 className="fw-bold">Answers:</h5>
-            <span>Check the box if the answer is the correct answer</span><br/><br/>
-            <div className="list-group-item d-flex justify-content-between">
-                <input type="text" id="question_input" className="form-control me-2" 
-                placeholder="Type your answers here" 
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}/>
-                
-                <button onClick={addElement} className="btn btn-success"> Add Answer </button>
-            </div>
-            <br/>
-            <br/>
-            
-            <ul className="list-group">
-                {array.map((item: any, index: any) => (
-                <li key={index}
-                    // showing all the answers
-                    className="list-group-item d-flex justify-content-between align-items-center" >
-                        <input
-                        type="checkbox"
-                        className="form-check-input me-3"
-                        id={`checkbox-${index}`} />
-                        
-                        <label htmlFor={`checkbox-${index}`} className="flex-grow-1"> {item} </label>
-                        
-                        <button className="btn btn-danger btn-sm" 
-                        onClick={() => setArray(array.filter((_: any, i:any) => i !== index)) } > 
-                        Delete
-                        </button>
-
-                </li>
-                ))}
-            </ul>
+    <div>
+        <input
+        id="question_input" 
+        type="text"
+        placeholder="Type your question here"
+        className="form-control"
+        value={localQuestion}
+        onChange={(e) => setLocalQuestion(e.target.value)}
+        />
+        <br/>
+        
+        <h5 className="fw-bold">Answers:</h5>
+        <span>Check the box if the answer is the correct answer</span><br/><br/>
+        <div className="list-group-item d-flex justify-content-between">
+            <input
+            type="text"
+            id="question_input"
+            className="form-control me-2" 
+            placeholder="Type your answers here" 
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            />
+            <button className="btn btn-success" onClick={addOption}> Add Answer </button>
         </div>
-    )
-    
+        <br/>
+        <div>
+            {localOptions.map((option, index) => (
+                <div key={index} className="list-group-item d-flex justify-content-between align-items-center" >
+                    <label>
+                        <input 
+                        className="form-check-input me-3"
+                        type="checkbox"
+                        checked={localAnswers.includes(option)}
+                        onChange={() => toggleAnswerSelection(option)}
+                        />
+                        {option}
+                    
+                    </label>
+                    
+                    <button className="btn btn-danger btn-sm" onClick={() => removeOption(index)}> Delete </button>
+                
+                </div>
+            )
+        )
+        }
+        </div>
+    </div>
+    );
 }
