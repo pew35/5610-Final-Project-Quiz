@@ -8,14 +8,14 @@ import * as quizzesClient from "./client";
 import { useDispatch, useSelector } from "react-redux";
 
 type Question = {
-  id: number;
-  cid: string;
-  qid: string;
+  _id: string;
+  courseId: string;
+  quizId: string;
   title: string;
   type: string;
-  questions: string,
-  options: string[],
-  answers: string[],
+  question: string,
+  Option: string[],
+  answer: string[],
   points: number
 };
 
@@ -23,16 +23,14 @@ export default function QuizEditor(
 ) {
     
     const {pathname} = useLocation();
-    const qid = pathname.split("/")[5]
-    const cid = pathname.split("/")[3]
-    const parentPath = pathname.split('/').slice(0, -1).join('/');
-    const dispatch = useDispatch();
+    const quizId = pathname.split("/")[5]
+    const courseId = pathname.split("/")[3]
 
     const [quiz, setQuiz] = useState<any>(null); // Local state to hold quiz data
     
     const fetchQuiz = async () => {
         try {
-          const quizData = await quizzesClient.findQuizById(qid as string);
+          const quizData = await quizzesClient.findQuizById(quizId as string);
           console.log('Set quiz in QuizEditor', quizData)
           setQuiz(quizData);
         } catch (error) {
@@ -41,7 +39,7 @@ export default function QuizEditor(
     };
     useEffect(() => {
         fetchQuiz();
-    }, [qid]);
+    }, [quizId]);
 
     // this is all const related to adding new questions
     const [questions, setQuestions] = useState<Question[]>([]);
@@ -53,14 +51,14 @@ export default function QuizEditor(
     // Function to add a new question
     const addQuestion = () => {
         const newQuestion: Question = {
-            id: question_length,
-            qid: qid,
-            cid: cid,
+            _id: question_length.toString(),
+            quizId: quizId,
+            courseId: courseId,
             title: "",
             type: "Multiple Choice",
-            questions: "",
-            options: [],
-            answers: [],
+            question: "",
+            Option: [],
+            answer: [],
             points: 0,
         };
         setQuestions([...questions, newQuestion]);
@@ -68,59 +66,60 @@ export default function QuizEditor(
 
     // Function to handle changes in the question fields
     const handleQuestionChange = (
-        id: number,
+        _id: string,
         key: keyof Question,
         value: string
     ) => {
         setQuestions((prevQuestions) =>
         prevQuestions.map((question) =>
-            question.id === id ? { ...question, [key]: value } : question
+            question._id === _id ? { ...question, [key]: value } : question
         )
         );
     };
 
-    const saveQuestion = (id: number) => {
-        const questionToSave = questions.find((q) => q.id === id);
+    const saveQuestion = async (_id: string) => {
+        const questionToSave = questions.find((q) => q._id === _id);
         if (questionToSave) {
-            console.log(questionToSave)
-          setSavedQuestions([questionToSave, ...savedQuestions]); // Add saved question to the top
-          deleteQuestion(id); // Remove from editable questions
+            const savedData = await quizzesClient.createQuestionsForQuiz(questionToSave);
+            console.log("successfully save question to db", savedData);
+            setSavedQuestions([questionToSave, ...savedQuestions]); // Add saved question to the top
+            deleteQuestion(_id); // Remove from editable questions
         }
     };
 
-    const deleteQuestion = (id: number) => {
+    const deleteQuestion = (_id: string) => {
         setQuestions((prevQuestions) =>
-          prevQuestions.filter((question) => question.id !== id)
+          prevQuestions.filter((question) => question._id !== _id)
         );
     };
 
-    const editQuestion = (id: number) => {
-        const questionToEdit = savedQuestions.find((q) => q.id === id);
+    const editQuestion = (_id: string) => {
+        const questionToEdit = savedQuestions.find((q) => q._id === _id);
         if (questionToEdit) {
           setQuestions([...questions, questionToEdit]);
           setSavedQuestions((prevSavedQuestions) =>
-            prevSavedQuestions.filter((question) => question.id !== id)
+            prevSavedQuestions.filter((question) => question._id !== _id)
           );
         }
-      };
+    };
 
-      const deleteSavedQuestion = (id: number) => {
+    const deleteSavedQuestion = (_id: string) => {
         setSavedQuestions((prevSavedQuestions) =>
-          prevSavedQuestions.filter((question) => question.id !== id)
+          prevSavedQuestions.filter((question) => question._id !== _id)
         );
-      };
+    };
 
     // Render fields based on question type
-    const renderQuestionTypeFields = (question: Question, updateQuestionField: (id: number, key: keyof Question, value: any) => void ) => {
+    const renderQuestionTypeFields = (question: Question, updateQuestionField: (_id: string, key: keyof Question, value: any) => void ) => {
         switch (question.type) {
             case "Multiple Choice":
                 return (
                     <QuizEditorMultipleChoice
                         question = {question}
                         onChange = { (updatedQuestions, updatedOptions, updatedAnswers) => {
-                            updateQuestionField(question.id, "questions", updatedQuestions);
-                            updateQuestionField(question.id, "options", updatedOptions);
-                            updateQuestionField(question.id, "answers", updatedAnswers);
+                            updateQuestionField(question._id, "question", updatedQuestions);
+                            updateQuestionField(question._id, "Option", updatedOptions);
+                            updateQuestionField(question._id, "answer", updatedAnswers);
                         } }
                     />
                     );
@@ -129,9 +128,9 @@ export default function QuizEditor(
                     <QuizEditorTrueFalse
                     question={question}
                     onChange={(updatedQuestions, updatedOptions, updatedAnswers) => {
-                        updateQuestionField(question.id, "questions", updatedQuestions);
-                        updateQuestionField(question.id, "options", updatedOptions);
-                        updateQuestionField(question.id, "answers", updatedAnswers);
+                        updateQuestionField(question._id, "question", updatedQuestions);
+                        updateQuestionField(question._id, "Option", updatedOptions);
+                        updateQuestionField(question._id, "answer", updatedAnswers);
                     }}/> 
                 );
             case "Fill in the Blank":
@@ -139,8 +138,8 @@ export default function QuizEditor(
                 <QuizEditorFillInTheBlank 
                 question={question}
                 onChange={(updatedText, updatedAnswers) => {
-                    updateQuestionField(question.id, "questions", updatedText);
-                    updateQuestionField(question.id, "answers", updatedAnswers);
+                    updateQuestionField(question._id, "question", updatedText);
+                    updateQuestionField(question._id, "answer", updatedAnswers);
                     }}/>
                 );
             default:
@@ -148,25 +147,25 @@ export default function QuizEditor(
         }
     };
 
-    const updateQuestionField = (id: number, key: keyof Question, value: any) => {
+    const updateQuestionField = (_id: string, key: keyof Question, value: any) => {
         setQuestions((prevQuestions) =>
           prevQuestions.map((question) =>
-            question.id === id ? { ...question, [key]: value } : question
+            question._id === _id ? { ...question, [key]: value } : question
           )
         );
-      };
+    };
 
     return (
         <div>
             {quiz ? ( <h1>{quiz.title}</h1> ) : ( <p>Loading...</p> )}
 
             {savedQuestions.map((question, index) => (
-                <div key={question.id} className="mb-3 p-3 border rounded bg-light">
-                <h5>Question {question.id}</h5>
+                <div key={question._id} className="mb-3 p-3 border rounded bg-light">
+                <h5>Question {question._id}</h5>
                     <p><strong>Type:</strong> {question.type}</p>
-                    <p><strong>Question:</strong> {question.questions}</p>
-                    <button className="btn btn-warning me-2" onClick={() => editQuestion(question.id)}> Edit </button>
-                    <button className="btn btn-danger" onClick={() => deleteSavedQuestion(question.id)}> Delete </button>
+                    <p><strong>Question:</strong> {question.question}</p>
+                    <button className="btn btn-warning me-2" onClick={() => editQuestion(question._id)}> Edit </button>
+                    <button className="btn btn-danger" onClick={() => deleteSavedQuestion(question._id)}> Delete </button>
                 </div>
             ))}
             
@@ -176,7 +175,7 @@ export default function QuizEditor(
                 </div>
                 
                 {questions.map((question) => (
-                    <div key={question.id} className="mb-3 p-3 border rounded">
+                    <div key={question._id} className="mb-3 p-3 border rounded">
                         <div className="card-body">
                             <form className="row g-3">
                                 <div className="d-flex align-items-center  p-2 my-2">
@@ -186,7 +185,7 @@ export default function QuizEditor(
                                             className="form-control" 
                                             placeholder="Easy Question"
                                             onChange={(e) =>
-                                                updateQuestionField(question.id, "title", e.target.value)
+                                                updateQuestionField(question._id, "title", e.target.value)
                                             }
                                         ></input>
                                     </div>
@@ -196,7 +195,7 @@ export default function QuizEditor(
                                         <select
                                             value={question.type}
                                             onChange={(e) =>
-                                            handleQuestionChange(question.id, "type", e.target.value)
+                                            handleQuestionChange(question._id, "type", e.target.value)
                                             }
                                             className="form-select">
                                             <option value="Multiple Choice">Multiple Choice</option>
@@ -217,7 +216,7 @@ export default function QuizEditor(
                                             placeholder="0" 
                                             min="0"
                                             onChange={(e) =>
-                                                updateQuestionField(question.id, "points", parseInt(e.target.value) || 0)
+                                                updateQuestionField(question._id, "points", parseInt(e.target.value) || 0)
                                             }
                                         />
                                     </div>
@@ -234,8 +233,8 @@ export default function QuizEditor(
                         <hr/>
 
                         <div id="wd-Assignment-controls" className="text-nowrap ">
-                            <button id="wd-add-Assignment-btn" className="btn btn-success me-2" onClick={() => saveQuestion(question.id)}> Add </button>
-                            <button id="wd-add-Assignment-btn" className="btn btn-danger" onClick={() => deleteQuestion(question.id)} > Cancel </button>
+                            <button id="wd-add-Assignment-btn" className="btn btn-success me-2" onClick={() => saveQuestion(question._id)}> Add </button>
+                            <button id="wd-add-Assignment-btn" className="btn btn-danger" onClick={() => deleteQuestion(question._id)} > Cancel </button>
                         </div>
                     </div>
                 ))}

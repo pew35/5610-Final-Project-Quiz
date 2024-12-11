@@ -15,50 +15,8 @@ import { setQuizzes, addQuiz, deleteQuiz, updateQuiz } from "./quizReducer"
 
 
 export default function Quiz() {
-    // <<<<<<< HEAD
-    //     const Quiz = [{
-    //         id: 1,
-    //         title: "Q1",
-    //         course: "RS101",
-    //         detail: "",
-    //         publish: true,
-    //         attempts: 4,
-    //         availableDate: "2024-10-01",
-    //         availableUntilDate: "2024-12-30",
-    //         dueDate: "2024-12-30",
-    //         points: 50,
-    //         numberOfQuestion: 5
-    //     },
-    //     {
-    //         id: 2,
-    //         title: "Q2",
-    //         detail: "",
-    //         course: "RS101",
-    //         publish: false,
-    //         attempts: 4,
-    //         availableDate: "2024-11-30",
-    //         availableUntilDate: "2024-12-05",
-    //         dueDate: "2024-12-01",
-    //         points: 40,
-    //         numberOfQuestion: 5
-    //     }]
-
-    //     const [quizzes, setQuizzes] = useState<any[]>(Quiz);
-    // =======
-    // >>>>>>> fe3b581425e08d539efd0dc7927ce16b7b5ee1da
     const { cid } = useParams();
     const dispatch = useDispatch();
-
-    // const [quizTitle, setQuizTitle] = useState("");
-    // const [quizDescription, setQuizDescription] = useState("");
-    // const [quizPublish, setQuizPublish] = useState<Boolean | null>(null);
-    // const [quizAttempts, setQuizAttempts] = useState<Number | null>(null);
-    // const [quizAvailableDate, setQuizAvailableDate] = useState("");
-    // const [quizAvailableUntilDate, setQuizAvailableUntilDate] = useState("");
-    // const [quizPoints, setQuizPoints] = useState<Number | null>(null);
-    // const [quizDueDate, setQuizDueDate] = useState("");
-    // const [quizNumberOfQuestions, setQuizNumberOfQuestions] = useState<Number | null>(null);
-    // const [quizTimeLimit, setQuizTimeLimit] = useState<Number | null>(null);
 
     const { quizzes = [] } = useSelector((state: any) => state.quizReducerCreate || {});
     console.log("Quizzes in component:", quizzes);
@@ -161,6 +119,7 @@ export default function Quiz() {
                                                 {`2/1`}
                                             </span>
                                         </div>
+
                                         {canEdit && (
                                             <div
                                                 className="col-auto"
