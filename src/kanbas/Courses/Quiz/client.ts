@@ -69,3 +69,17 @@ export const findLatestAttemptsbyUIdandQId= async(_id: any, qid: string) => {
     const { data } = await axios.get(`${QUIZZES_API}/${qid}/${_id}/latestattempts`);
     return data;
 }
+
+export const deleteQuestions = async (quizId: string, questionsId: string) => {
+    console.log("Delete question id: ", questionsId)
+    const response = await axiosWithCredentials.delete(`${QUIZZES_API}/${quizId}/questions/${questionsId}`);
+    return response.data;
+};
+
+export const createQuestionsForQuiz = async ( question: any) => {
+    const response = await axiosWithCredentials.post(
+        `${QUESTIONS_API}`, question
+    )
+    console.log("Server side createQuestionsForQuiz: ", question)
+    return response.data;
+}

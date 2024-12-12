@@ -48,7 +48,6 @@ export default function QuizEditor(
     const {pathname} = useLocation();
     const quizId = pathname.split("/")[5]
     const courseId = pathname.split("/")[3]
-    const qid = pathname.split("/")[5]
     const cid = pathname.split("/")[3]
     const parentPath = pathname.split('/').slice(0, -1).join('/');
     const dispatch = useDispatch();
@@ -94,7 +93,7 @@ export default function QuizEditor(
 
 
     const [quizDetails, setQuizDetails] = useState<Quiz>({
-        _id: qid,
+        _id: quizId,
         title: "",
         description: "",
         instructions: "",
@@ -128,7 +127,7 @@ export default function QuizEditor(
         try {
             const updatedQuizData = {
                 ...quizDetails,
-                _id: qid,
+                _id: quizId,
                 courseId: cid,
             };
             
@@ -136,7 +135,7 @@ export default function QuizEditor(
             console.log("Quiz saved successfully:", updatedQuiz);
             
             // Navigate back to quiz details page
-            navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}`);
+            navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}`);
         } catch (error) {
             console.error("Error saving quiz:", error);
         }
@@ -265,7 +264,7 @@ export default function QuizEditor(
     // Add function to fetch questions when quiz loads
     const fetchQuestions = async () => {
         try {
-            const questions = await quizzesClient.findQuestionsByQuiz(qid);
+            const questions = await quizzesClient.findQuestionsByQuiz(quizId);
             setSavedQuestions(questions);
         } catch (error) {
             console.error("Error fetching questions:", error);
@@ -276,7 +275,7 @@ export default function QuizEditor(
     useEffect(() => {
         fetchQuiz();
         fetchQuestions();
-    }, [qid]);
+    }, [quizId]);
 
     return (
         <div>
