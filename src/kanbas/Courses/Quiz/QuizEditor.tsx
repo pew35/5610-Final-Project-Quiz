@@ -210,14 +210,8 @@ export default function QuizEditor(
             const response = await quizzesClient.deleteQuestions(quizId, questionId); // Replace with your actual API function
             if (response.success) {
                 console.log("Successfully deleted question:", questionId);
-    
                 // Update state to reflect deletion
-                setQuestions((prevQuestions) =>
-                    prevQuestions.filter((q) => q._id !== questionId)
-                );
-    
-                // Reload the page to ensure consistent UI
-                window.location.reload();
+                setQuestions((prevQuestions) => prevQuestions.filter((q) => q._id !== questionId) );
             } else {
                 console.error("Delete operation failed:", response.message);
                 alert("Failed to delete the question. Please try again.");
@@ -647,7 +641,8 @@ export default function QuizEditor(
                     <p><strong>Type:</strong> {question.type}</p>
                     <p><strong>Question:</strong> {question.question}</p>
                     <button className="btn btn-warning me-2" onClick={() => editQuestion(question._id)}> Edit </button>
-                    <button className="btn btn-danger" onClick={() => deleteSavedQuestion(question._id)}> Delete </button>
+                    {/* force reload cause for some reason the questions does not get updated though it is reflected in DB that is it deleted */}
+                    <button className="btn btn-danger" onClick={() => { deleteSavedQuestion(question._id); window.location.reload(); }}> Delete </button>
                 </div>
             ))}
             
