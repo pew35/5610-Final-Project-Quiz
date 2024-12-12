@@ -48,20 +48,33 @@ export default function QuizEditor(
     const parentPath = pathname.split('/').slice(0, -1).join('/');
     const dispatch = useDispatch();
 
-    const [quiz, setQuiz] = useState<any>(null); // Local state to hold quiz data
+    const [quiz, setQuiz] = useState<Quiz | null>(null); // Local state to hold quiz data
     
     const fetchQuiz = async () => {
         try {
-          const quizData = await quizzesClient.findQuizById(qid as string);
-          console.log('Set quiz in QuizEditor', quizData)
-          setQuiz(quizData);
+            const quizData = await quizzesClient.findQuizById(qid);
+            setQuiz(quizData);
+            // Update quizDetails with fetched data
+            setQuizDetails({
+                id: quizData.id,
+                title: quizData.title || "New Quiz",
+                instructions: quizData.instructions || "",
+                attempts: quizData.attempts || 0,
+                multipleAttempts: quizData.multipleAttempts || false,
+                availableDate: quizData.availableDate || "",
+                availableUntilDate: quizData.availableUntilDate || "",
+                dueDate: quizData.dueDate || "",
+                points: quizData.points || 0,
+                numberOfQuestions: quizData.numberOfQuestions || 0,
+                timeLimit: quizData.timeLimit || 0,
+                quizType: quizData.quizType || "Graded Quiz",
+                assignmentGroup: quizData.assignmentGroup || "Quizzes",
+                shuffleAnswers: quizData.shuffleAnswers || false,
+            });
         } catch (error) {
-          console.error("Failed to fetch quiz:", error);
+            console.error("Failed to fetch quiz:", error);
         }
     };
-    useEffect(() => {
-        fetchQuiz();
-    }, [qid]);
 
     const [activeTab, setActiveTab] = useState("details");
     const [instructions, setInstructions] = useState("");
@@ -69,8 +82,8 @@ export default function QuizEditor(
 
     const [quizDetails, setQuizDetails] = useState<Quiz>({
         id: parseInt(qid) || 0,
-        title: "",
-        instructions: "",
+        title: "new quiz",
+        instructions: "type your instructions here",
         attempts: 0,
         multipleAttempts: false,
         availableDate: "",
@@ -79,9 +92,9 @@ export default function QuizEditor(
         points: 0,
         numberOfQuestions: 0,
         timeLimit: 0,
-        quizType: "Graded Quiz", // NEW: Default value based on backend schema
-        assignmentGroup: "Quizzes", // NEW: Default value based on backend schema
-        shuffleAnswers: true, // NEW: Default value based on backend schema
+        quizType: "Graded Quiz", 
+        assignmentGroup: "Quizzes",
+        shuffleAnswers: true, 
       });
 
       const handleEditorChange = (content: string) => {
@@ -98,21 +111,34 @@ export default function QuizEditor(
       // need to modify for the backend
       const handleSaveQuizDetails = async () => {
         try {
+            // First update the quiz details
             const updatedQuiz = await quizzesClient.updateQuiz({
                 _id: qid,
                 ...quizDetails,
-                questions: [...questions, ...savedQuestions]
             });
-            console.log("Quiz saved successfully:", updatedQuiz);
-            // Optionally refresh the quiz data
+
+            // Then handle any unsaved questions
+            const questionPromises = questions.map(async (question) => {
+                const questionData = {
+                    ...question,
+                    qid: qid,
+                    cid: cid,
+                };
+                return await quizzesClient.createQuestionForQuiz(questionData);
+            });
+
+            await Promise.all(questionPromises);
+            
+            // Refresh the quiz and questions data
             await fetchQuiz();
+            await fetchQuestions();
+            
+            // Navigate back to parent path
+            window.location.href = parentPath;
         } catch (error) {
             console.error("Error saving quiz:", error);
         }
     };
-
-
-
 
 
     // this is all const related to adding new questions
@@ -155,9 +181,15 @@ export default function QuizEditor(
         const questionToSave = questions.find((q) => q.id === id);
         if (questionToSave) {
             try {
-                const savedQuestion = await quizzesClient.createQuestionForQuiz(questionToSave);
-                setSavedQuestions([savedQuestion, ...savedQuestions]);
-                deleteQuestion(id);
+                const savedQuestion = await quizzesClient.createQuestionForQuiz({
+                    ...questionToSave,
+                    qid: qid,
+                    cid: cid,
+                });
+                setSavedQuestions(prev => [savedQuestion, ...prev]);
+                setQuestions(prev => prev.filter(q => q.id !== id));
+                // Refresh questions after saving
+                await fetchQuestions();
             } catch (error) {
                 console.error("Error saving question:", error);
             }
@@ -170,6 +202,8 @@ export default function QuizEditor(
             setQuestions(prevQuestions => 
                 prevQuestions.filter(question => question.id !== id)
             );
+            // Refresh questions after deletion
+            await fetchQuestions();
         } catch (error) {
             console.error("Error deleting question:", error);
         }
@@ -254,8 +288,10 @@ export default function QuizEditor(
 
     // Update useEffect to fetch questions along with quiz
     useEffect(() => {
-        fetchQuiz();
-        fetchQuestions();
+        if (qid) {
+            fetchQuiz();
+            fetchQuestions();
+        }
     }, [qid]);
 
     return (
@@ -582,8 +618,8 @@ export default function QuizEditor(
                 <button
                     className="btn btn-danger me-2"
                     onClick={() => {
-                    handleSaveQuizDetails(); // Save the quiz details
-                    window.location.href = `/quiz/${quizDetails.id}/details`; // Replace with your route for the Quiz Details screen
+                        handleSaveQuizDetails(); // Save the quiz details
+                        window.location.href = parentPath; // Navigate back to quiz preview page
                     }}
                 >
                     Save

@@ -3,8 +3,8 @@ import axios from "axios";
 const REMOTE_SERVER = process.env.REACT_APP_REMOTE_SERVER;
 const QUIZZES_API = `${REMOTE_SERVER}/api/quizzes`;
 
-export const findQuizById = async (quizId: string) => {
-    const response = await axios.get(`${QUIZZES_API}/${quizId}`) ;
+export const findQuizById = async (qid: string) => {
+    const response = await axios.get(`${QUIZZES_API}/${qid}`);
     return response.data;
 };
 
@@ -14,14 +14,14 @@ export const deleteQuiz = async (quizId: string) => {
 };
 
 export const updateQuiz = async (quiz: any) => {
-    const { data } = await axios.put(`${QUIZZES_API}/${quiz._id}`, quiz);
-    return data;
+    const response = await axios.put(`${QUIZZES_API}/${quiz._id}`, quiz);
+    return response.data;
 };
 
-export const findQuestionsByQuiz = async (quizId: string) => {
-    const { data } = await axios.get(`${QUIZZES_API}/${quizId}/questions`);
-    return data;
-}
+export const findQuestionsByQuiz = async (qid: string) => {
+    const response = await axios.get(`${QUIZZES_API}/${qid}/questions`);
+    return response.data;
+};
 
 export const createAttempt = async (attempt: any) => {
     const response = await axios.post(`/api/attempts`, attempt);
@@ -39,16 +39,11 @@ export const findAttemptsAnswers = async (attemptId: string) => {
 };
 
 export const createQuestionForQuiz = async (question: any) => {
-    const { data } = await axios.post(
-        `${QUIZZES_API}/${question.qid}/questions`, 
-        question
-    );
-    return data;
+    const response = await axios.post(`${QUIZZES_API}/questions`, question);
+    return response.data;
 };
 
 export const deleteQuestionFromQuiz = async (questionId: string) => {
-    const { data } = await axios.delete(
-        `${QUIZZES_API}/questions/${questionId}`
-    );
-    return data;
+    const response = await axios.delete(`${QUIZZES_API}/questions/${questionId}`);
+    return response.data;
 };
