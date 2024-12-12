@@ -86,8 +86,12 @@ export default function Quiz() {
         await quizzesClient.deleteQuiz(quizId);
         dispatch(deleteQuiz(quizId));
     };
+    const fatchAttemptbyQuizId = async (quizId: string) => {
+        const attempts = await quizzesClient.findAttemptsByQuizID(quizId);
+        console.log("Attempts: ", attempts);
+    }
 
-    
+
     useEffect(() => {
         fetchQuizzes();
     }, [quizzes]);
