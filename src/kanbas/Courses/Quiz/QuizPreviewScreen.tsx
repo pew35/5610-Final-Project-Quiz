@@ -16,7 +16,7 @@ export default function QuizPreviewScreen() {
     const qid = pathname.split("/")[5]
     const { cid } = useParams();
     const { currentUser } = useSelector((state: any) => state.accountReducer);
-    const [quizzes, setQuizzes] = useState<any[]>([]);
+    const [quiz, setQuiz] = useState<any>(null);
     const [questions, setQuestions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const filteredQuestions = questions.filter((q: any) => q.quizId === qid);
@@ -35,10 +35,17 @@ export default function QuizPreviewScreen() {
     const fetchQuizData = async () => {
         try {
             setLoading(true);
-            const quiz = await quizClient.findQuizById(qid);
-            const quizQuestions = await quizClient.findQuestionsByQuiz(qid);
-            setQuizzes([quiz]);
-            setQuestions(quizQuestions);
+            const [fetchedQuiz, fetchedQuestions] = await Promise.all([
+                quizClient.findQuizById(qid),
+                quizClient.findQuestionsByQuiz(qid)
+            ]);
+            
+            if (!fetchedQuiz) {
+                throw new Error("Quiz not found");
+            }
+
+            setQuiz(fetchedQuiz);
+            setQuestions(fetchedQuestions || []);
         } catch (error) {
             console.error("Error fetching quiz data:", error);
         } finally {
@@ -66,10 +73,16 @@ export default function QuizPreviewScreen() {
 
     const handleSubmit = async () => {
         try {
-            await quizClient.createAttempt( { answers });
+            const attempt = {
+                quizId: qid,
+                userId: currentUser._id,
+                answers: answers,
+                timestamp: new Date().toISOString()
+            };
+            await quizClient.createAttempt(attempt);
             dispatch(setQuizSubmitted({ quizId: qid }));
             navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}`);
-            alert("Quiz submitted!");
+            alert("Quiz submitted successfully!");
         } catch (error) {
             console.error("Error submitting quiz:", error);
             alert("Failed to submit quiz. Please try again.");
@@ -77,9 +90,8 @@ export default function QuizPreviewScreen() {
     };
     
     const currentQuestion = questions[currentQuestionIndex];
-    const quiz = quizzes[0];
 
-    if (loading) {
+    if (loading || !quiz) {
         return <div>Loading...</div>;
     }
 
@@ -87,7 +99,7 @@ export default function QuizPreviewScreen() {
         <div className="container mt-4">
             <div className="row">
                 <div className="col ">
-                    <h2 className="text-start">{quiz?.title}</h2>
+                    <h2 className="text-start">{quiz.title}</h2>
 
                     {currentUser.role === 'FACULTY' && (
                     <div
