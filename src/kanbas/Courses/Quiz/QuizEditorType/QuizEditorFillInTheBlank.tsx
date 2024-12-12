@@ -5,13 +5,13 @@ export default function QuizEditorFillInTheBlank({
     onChange
 }: 
 {
-    question: { id: number; questions: string; answers: string[] };
-    onChange: (questions: string, answers: string[]) => void;
+    question: { _id: string; question: string; answer: string[] };
+    onChange: (questions: string, answer: string[]) => void;
 }
 ) {
 
-    const [localQuestion, setLocalQuestion] = useState(question.questions || "");
-    const [localAnswers, setLocalAnswers] = useState<string[]>(question.answers || []);
+    const [localQuestion, setLocalQuestion] = useState(question.question || "");
+    const [localAnswers, setLocalAnswers] = useState<string[]>(question.answer || []);
     const [inputValue, setInputValue] = useState("");
 
     // Send updates to the parent whenever localQuestion, localOptions, or answers change
