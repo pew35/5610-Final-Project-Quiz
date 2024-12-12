@@ -103,8 +103,6 @@ export default function QuizEditor(
     }, [qid]);
 
     const [activeTab, setActiveTab] = useState("details");
-    const [instructions, setInstructions] = useState("");
-
 
     const [quizDetails, setQuizDetails] = useState<Quiz>({
         _id: qid,
@@ -135,9 +133,10 @@ export default function QuizEditor(
         }));
       };
     
-      // need to modify for the backend
+      // ATTENTION: did not test questions saving
       const handleSaveQuizDetails = async () => {
         try {
+            // First save the quiz details
             const updatedQuizData = {
                 ...quizDetails,
                 _id: qid,
@@ -147,12 +146,25 @@ export default function QuizEditor(
             const updatedQuiz = await quizzesClient.updateQuiz(updatedQuizData);
             console.log("Quiz saved successfully:", updatedQuiz);
             
+            // Then save any unsaved questions
+            for (const question of questions) {
+                try {
+                    await quizzesClient.createQuestionForQuiz(question);
+                } catch (error) {
+                    console.error("Error saving question:", error);
+                }
+            }
+            
+            // Clear the unsaved questions array
+            setQuestions([]);
+            
             // Navigate back to quiz details page
             navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}`);
         } catch (error) {
             console.error("Error saving quiz:", error);
         }
     };
+    
 
     // this is all const related to adding new questions
     const [questions, setQuestions] = useState<Question[]>([]);
@@ -594,38 +606,7 @@ export default function QuizEditor(
                 </div>
             </div>
                 <hr />
-            <div className="d-flex justify-content-center mt-4">
-                {/* Cancel Button */}
-                <button
-                    className="btn btn-secondary me-2"
-                    onClick={() => {
-                    // Navigate to Quiz List screen without saving
-                    
-                    navigate(`/Kanbas/Courses/${cid}/Quizzes`); // Replace with your route for the Quiz List screen
-                    }}
-                >
-                    Cancel
-                </button>
-
-                {/* Save Button */}
-                <button
-                    className="btn btn-danger me-2"
-                    onClick={handleSaveQuizDetails}
-                >
-                    Save
-                </button>
-
-                {/* Save and Publish Button */}     
-            {/*                     <button
-                    className="btn btn-primary"
-                    onClick={() => {
-                    handleSaveAndPublishQuiz(); // Save and publish the quiz
-                    window.location.href = "/quiz-list"; // Replace with your route for the Quiz List screen
-                    }}
-                >
-                    Save and Publish
-                </button> */}
-            </div>
+            
                                                     
 
         </div>
@@ -719,6 +700,40 @@ export default function QuizEditor(
                     </div>
                 </div>
             )}
+
+
+            <div className="d-flex justify-content-center mt-4">
+                {/* Cancel Button */}
+                <button
+                    className="btn btn-secondary me-2"
+                    onClick={() => {
+                    // Navigate to Quiz List screen without saving
+                    
+                    navigate(`/Kanbas/Courses/${cid}/Quizzes`); // Replace with your route for the Quiz List screen
+                    }}
+                >
+                    Cancel
+                </button>
+                
+                {/* Save Button */}
+                <button
+                    className="btn btn-danger me-2"
+                    onClick={handleSaveQuizDetails}
+                >
+                    Save
+                </button>
+
+                {/* Save and Publish Button */}     
+            {/*                     <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                    handleSaveAndPublishQuiz(); // Save and publish the quiz
+                    window.location.href = "/quiz-list"; // Replace with your route for the Quiz List screen
+                    }}
+                >
+                    Save and Publish
+                </button> */}
+            </div>
         </div>
     );
 };
