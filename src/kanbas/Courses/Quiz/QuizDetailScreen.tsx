@@ -3,67 +3,83 @@ import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import * as quizzesClient from "./client";
 
+
+interface QuizDetails {
+    quizType: string;
+    points: number;
+    assignmentGroup: string;
+    shuffleAnswers: string;
+    timeLimit: string;
+    multipleAttempts: string;
+    viewResponses: string;
+    showCorrectAnswers: string;
+    oneQuestionAtATime: string;
+    requireRespondusLockDown: string;
+    requiredToViewResults: string;
+    webcamRequired: string;
+    lockQuestionsAfterAnswering: string;
+    dueDate: string;
+    availableFrom: string;
+    availableUntil: string;
+    forWho: string;
+    title: string;
+}
+
 export default function QuizDetailScreen() {
     const { pathname } = useLocation();
     const qid = pathname.split("/")[5];
-    const cid = pathname.split("/")[3];
     const { currentUser } = useSelector((state: any) => state.accountReducer);
     
-    // State for data from backend
-    const [quiz, setQuiz] = useState<any>(null);
-    const [questions, setQuestions] = useState<any[]>([]);
-    const [userAttempts, setUserAttempts] = useState<any[]>([]);
-    const [latestAttempt, setLatestAttempt] = useState<any>(null);
-    const [latestAnswers, setLatestAnswers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [quizDetails, setQuizDetails] = useState<QuizDetails>({
+        quizType: "Graded Quiz",
+        points: 29,
+        assignmentGroup: "QUIZZES",
+        shuffleAnswers: "No",
+        timeLimit: "30 Minutes",
+        multipleAttempts: "No",
+        viewResponses: "Always",
+        showCorrectAnswers: "Immediately",
+        oneQuestionAtATime: "Yes",
+        requireRespondusLockDown: "No",
+        requiredToViewResults: "No",
+        webcamRequired: "No",
+        lockQuestionsAfterAnswering: "No",
+        dueDate: "Sep 21 at 1pm",
+        availableFrom: "Sep 21 at 11:40am",
+        availableUntil: "Sep 21 at 1pm",
+        forWho: "Everyone",
+        title: "Q1 - HTML"
+    });
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchQuizDetails = async () => {
             try {
                 setLoading(true);
-                
-                // Fetch quiz details
-                const quizData = await quizzesClient.findQuizById(qid);
-                setQuiz(quizData);
-
-                // Fetch questions
-                const questionsData = await quizzesClient.findQuestionsByQuiz(qid);
-                setQuestions(questionsData);
-
-                // Fetch attempts
-                const attemptsData = await quizzesClient.findAttemptsByQuizID(qid);
-                const userAttemptsData = attemptsData.filter(
-                    (attempt: any) => attempt.userID === currentUser._id
-                );
-                setUserAttempts(userAttemptsData);
-
-                // Set latest attempt and fetch its answers
-                if (userAttemptsData.length > 0) {
-                    const latest = userAttemptsData.sort(
-                        (a: any, b: any) => b.attemptNumber - a.attemptNumber
-                    )[0];
-                    setLatestAttempt(latest);
-
-                    // Fetch answers for latest attempt
-                    const answersData = await quizzesClient.findAttemptsAnswers(latest._id);
-                    setLatestAnswers(answersData);
-                }
+                const quiz = await quizzesClient.findQuizById(qid);
+                setQuizDetails({
+                    ...quizDetails,
+                    quizType: quiz.quizType,
+                    points: quiz.points,
+                    assignmentGroup: quiz.assignmentGroup,
+                    shuffleAnswers: quiz.shuffleAnswers ? "Yes" : "No",
+                    timeLimit: `${quiz.timeLimit} Minutes`,
+                    title: quiz.title,
+                    dueDate: quiz.dueDate,
+                    availableFrom: quiz.availableDate,
+                    availableUntil: quiz.availableUntilDate
+                });
             } catch (error) {
-                console.error("Error fetching quiz data:", error);
+                console.error("Error fetching quiz details:", error);
             } finally {
                 setLoading(false);
             }
         };
-
-        fetchData();
-    }, [qid, currentUser._id]);
+        fetchQuizDetails();
+    }, [qid]);
 
     if (loading) {
         return <div>Loading...</div>;
-    }
-
-    if (!quiz) {
-        return <div>Quiz not found</div>;
     }
 
     return (
@@ -85,142 +101,69 @@ export default function QuizDetailScreen() {
                 </div>
             </div>
 
-            <div key={quiz._id} id="wd-assignments-editor">
-                {currentUser.role === "FACULTY" ? (
-                    <>
-                        <hr />
-                        <h4>{quiz.title}</h4>
-                        <div className="container">
-                            <div className="row">
-                                <div className="col d-flex flex-column align-items-end p-2 my-2">
-                                    <span className="text-end fw-bold my-1">Quiz Type</span>
-                                    <span className="text-end fw-bold my-1">Points</span>
-                                    <span className="text-end fw-bold my-1">Assignment Group</span>
-                                    <span className="text-end fw-bold my-1">Shuffle Answers</span>
-                                    <span className="text-end fw-bold my-1">Time Limit</span>
-                                    <span className="text-end fw-bold my-1">Multiple Attempts</span>
-                                </div>
-
-                                <div className="col d-flex flex-column align-items-start p-2 my-2">
-                                    <span className="text-start my-1">{quiz.quizType}</span>
-                                    <span className="text-start my-1">{quiz.points}</span>
-                                    <span className="text-start my-1">{quiz.assignmentGroup}</span>
-                                    <span className="text-start my-1">{quiz.shuffleAnswers ? "Yes" : "No"}</span>
-                                    <span className="text-start my-1">{quiz.timeLimit} Minutes</span>
-                                    <span className="text-start my-1">{quiz.attempts > 1 ? "Yes" : "No"}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <br />
-
-                        <div className="container">
-                            <div className="row">
-                                <div className="col d-flex flex-column align-items-start">
-                                    <span className="text-start fw-bold">Due</span>
-                                </div>
-                                <div className="col d-flex flex-column align-items-start">
-                                    <span className="text-start fw-bold">For</span>
-                                </div>
-                                <div className="col d-flex flex-column align-items-start">
-                                    <span className="text-end fw-bold">Available From</span>
-                                </div>
-                                <div className="col d-flex flex-column align-items-start">
-                                    <span className="text-end fw-bold">Until</span>
-                                </div>
-                            </div>
-                        </div>
-                        <hr />
-                        <div className="container">
-                            <div className="row">
-                                <div className="col d-flex flex-column align-items-start">
-                                    <span className="text-start">{quiz.dueDate}</span>
-                                </div>
-                                <div className="col d-flex flex-column align-items-start">
-                                    <span className="text-start">Everyone</span>
-                                </div>
-                                <div className="col d-flex flex-column align-items-start">
-                                    <span className="text-end">{quiz.availableDate}</span>
-                                </div>
-                                <div className="col d-flex flex-column align-items-start">
-                                    <span className="text-end">{quiz.availableUntilDate}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        <div id="wd-assignments-editor" className="text-start">
-                            <h2>{quiz.title}</h2>
-                            <hr />
-                            <div className="text-start mb-3">
-                                <p>
-                                    <strong>Due</strong> {quiz.dueDate} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <strong>Points</strong> {quiz.points} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <strong>Questions</strong> {questions.length} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <strong>Available</strong> {quiz.availableDate} - {quiz.availableUntilDate} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <strong>Time Limit</strong> {quiz.timeLimit}
-                                </p>
-                            </div>
-                            <hr /><br />
+            <div id="wd-quiz-details" className="mt-4">
+                <h2>{quizDetails.title}</h2>
+                
+                <div className="container">
+                    <div className="row">
+                        <div className="col-md-4 d-flex flex-column align-items-end p-2">
+                            <span className="text-end fw-bold my-1">Quiz Type</span>
+                            <span className="text-end fw-bold my-1">Points</span>
+                            <span className="text-end fw-bold my-1">Assignment Group</span>
+                            <span className="text-end fw-bold my-1">Shuffle Answers</span>
+                            <span className="text-end fw-bold my-1">Time Limit</span>
+                            <span className="text-end fw-bold my-1">Multiple Attempts</span>
+                            <span className="text-end fw-bold my-1">View Responses</span>
+                            <span className="text-end fw-bold my-1">Show Correct Answers</span>
+                            <span className="text-end fw-bold my-1">One Question at a Time</span>
+                            <span className="text-end fw-bold my-1">Require Respondus LockDown Browser</span>
+                            <span className="text-end fw-bold my-1">Required to View Quiz Results</span>
+                            <span className="text-end fw-bold my-1">Webcam Required</span>
+                            <span className="text-end fw-bold my-1">Lock Questions After Answering</span>
                         </div>
 
-                        {(!userAttempts.length || userAttempts.length < quiz.attempts) && (
-                            <div className="text-center">
-                                <Link to={`${pathname}/take`} id="wd-take-quiz" className="btn btn-danger">
-                                    Take Quiz
-                                </Link>
-                            </div>
-                        )}
-                    </>
-                )}
-
-                {userAttempts.length > 0 && (
-                    <div>
-                        <h3>Attempt History</h3>
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>Attempt</th>
-                                    <th>Score</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {userAttempts.map((attempt, index) => (
-                                    <tr key={index}>
-                                        <td>
-                                            {attempt._id === latestAttempt._id ? 'LATEST' : ''}
-                                        </td>
-                                        <td style={{ color: "red" }}>Attempt {attempt.attemptNumber}</td>
-                                        <td>{attempt.score} out of {quiz.points}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-
-                        {latestAttempt && (
-                            <>
-                                <div>
-                                    <span>Score for this quiz: <b style={{ fontSize: '20px', fontWeight: 'bold' }}>{latestAttempt.score}</b> out of {quiz.points}</span>
-                                    <h6>Submitted {latestAttempt.date}</h6>
-                                </div>
-                                <br />
-
-                                {questions.map((question, index) => {
-                                    const userAnswer = latestAnswers.find(
-                                        answer => answer.questionId === question._id
-                                    );
-                                    const isUserAnswerCorrect = userAnswer?.isCorrect;
-                                    const userSelectedAnswer = userAnswer?.answer[0];
-                                    const pointsAwarded = isUserAnswerCorrect ? question.points : 0;
-
-                                    // Rest of your existing question rendering logic...
-                                    // You might need to adjust this part based on your actual data structure
-                                })}
-                            </>
-                        )}
+                        <div className="col-md-8 d-flex flex-column align-items-start p-2">
+                            <span className="text-start my-1">{quizDetails.quizType}</span>
+                            <span className="text-start my-1">{quizDetails.points}</span>
+                            <span className="text-start my-1">{quizDetails.assignmentGroup}</span>
+                            <span className="text-start my-1">{quizDetails.shuffleAnswers}</span>
+                            <span className="text-start my-1">{quizDetails.timeLimit}</span>
+                            <span className="text-start my-1">{quizDetails.multipleAttempts}</span>
+                            <span className="text-start my-1">{quizDetails.viewResponses}</span>
+                            <span className="text-start my-1">{quizDetails.showCorrectAnswers}</span>
+                            <span className="text-start my-1">{quizDetails.oneQuestionAtATime}</span>
+                            <span className="text-start my-1">{quizDetails.requireRespondusLockDown}</span>
+                            <span className="text-start my-1">{quizDetails.requiredToViewResults}</span>
+                            <span className="text-start my-1">{quizDetails.webcamRequired}</span>
+                            <span className="text-start my-1">{quizDetails.lockQuestionsAfterAnswering}</span>
+                        </div>
                     </div>
-                )}
+                </div>
+
+                <div className="container mt-4">
+                    <div className="row">
+                        <div className="col">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th className="fw-bold">Due</th>
+                                        <th className="fw-bold">For</th>
+                                        <th className="fw-bold">Available from</th>
+                                        <th className="fw-bold">Until</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{quizDetails.dueDate}</td>
+                                        <td>{quizDetails.forWho}</td>
+                                        <td>{quizDetails.availableFrom}</td>
+                                        <td>{quizDetails.availableUntil}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
