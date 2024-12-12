@@ -19,9 +19,10 @@ export default function Quiz() {
     const dispatch = useDispatch();
 
     const { quizzes = [] } = useSelector((state: any) => state.quizReducerCreate || {});
-    console.log("Quizzes in component:", quizzes);
+    //console.log("Quizzes in component:", quizzes);
     // set users
     const { currentUser } = useSelector((state: any) => state.accountReducer);
+    const [latestAttempt, setLatestAttempt] = useState<any>({});
     const canEdit = ["FACULTY", "TA"].includes(currentUser?.role);
 
     // this is to fetch all the assignments for a course
@@ -44,13 +45,34 @@ export default function Quiz() {
         await quizzesClient.deleteQuiz(quizId);
         dispatch(deleteQuiz(quizId));
     };
+    const [quizScores, setQuizScores] = useState<{ [key: string]: number }>({});
 
-    
+  const getlatestAttemptBYUIdandQId = async (qid: string) => {
+    const latestAttempt = await quizzesClient.findLatestAttemptsbyUIdandQId(currentUser._id, qid);
+    setLatestAttempt(latestAttempt);
+    return latestAttempt ? latestAttempt.score : 0;
+  };
+
+
     useEffect(() => {
         fetchQuizzes();
-    }, [quizzes]);
+    }, []);
+    useEffect(() => {
+        const fetchQuizScores = async () => {
+          const scores: { [key: string]: number } = {};
+          for (const quiz of quizzes) {
+            const score = await getlatestAttemptBYUIdandQId(quiz._id);
+            scores[quiz._id] = score;
+          }
+          setQuizScores(scores); // Update the scores state for all quizzes
+        };
+    
+        if (quizzes.length > 0) {
+          fetchQuizScores();
+        }
+      }, [quizzes, currentUser._id]);
 
-    console.log("Quizzes after set: ", quizzes)
+    //console.log("Quizzes after set: ", quizzes)
 
     return (
         <div id="wd-quizzes">
@@ -78,6 +100,7 @@ export default function Quiz() {
                         <BsGripVertical className="me-2 fs-2" />
                         Quizzes
                     </div>
+                    
 
                     {quizzes && (
                         <ul className="list-group rounded-0">
@@ -115,9 +138,12 @@ export default function Quiz() {
                                             <span style={{ fontSize: "16px", lineHeight: "1.0" }} className="text-muted">
                                                 {` ${quiz.dueDate}  |  ${quiz.points} pts  |   ${quiz.numberOfQuestion} Questions`}
                                             </span>
-                                            <span>
-                                                {`2/1`}
-                                            </span>
+                                            {latestAttempt && (
+                                                 <span style={{ fontSize: "16px", lineHeight: "1.0" }} className="text-muted" >
+                                                 | Latest Score: {quizScores[quiz._id] || 0}
+                                                </span>
+                                            )}
+                                           
                                         </div>
 
                                         {canEdit && (

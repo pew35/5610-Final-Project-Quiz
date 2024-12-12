@@ -1,34 +1,84 @@
 import { useLocation, Link } from "react-router-dom";
-import { useSelector } from "react-redux";
-import {useState} from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {useEffect, useState} from "react";
 import * as db from "../../Database";
+import * as client from "./client";
+import { setQuizzes, addQuiz, deleteQuiz, updateQuiz } from "./quizReducer"
 
 export default function QuizDetailScreen() {
+    
+    const dispatch = useDispatch();
     const {pathname} = useLocation();
-    const quizzes = db.quizzes;
-    const questions = db.questions;
+    const qid = pathname.split("/")[5];
+
+    const [userAttempts, setAttempts] = useState<any[]>([]); // attempts found by user id and quiz id
+    const [latestAttempt, setLatestAttempt] = useState<any>({}); // lstest attempt found by user id and quiz id
+    const [latestAnswers, setLatestAnswers] = useState<any[]>([]); // dont know what this is
+    const {quizzes} = useSelector((state: any) => state.quizReducerCreate);
+    const quiz = quizzes.find((q: any) => q._id === qid);
+    const [questions, setQuestions] = useState<any[]>([]);// questions found by quiz id no need to filter change name to questions
+    
+    const getAttemptsbyUIdandQId = async () => {
+        console.log("Attempt found: ", currentUser._id, qid)
+        const userattempts = await client.findAttemptsbyUIdandQId(currentUser._id, qid);
+        if (userAttempts.length > 0) {
+            getlatestAttemptBYUIdandQId();
+            
+        }
+        setAttempts(userattempts);
+    }
+    const getlatestAttemptBYUIdandQId = async () => {
+        const latestAttempt = await client.findLatestAttemptsbyUIdandQId(currentUser._id, qid);
+        setLatestAttempt(latestAttempt);
+    }
+
+    const fetchQuizData = async () => {
+        try {
+            const quizQuestions = await client.findQuestionsByQuiz(qid);   
+            setQuestions(quizQuestions);
+        } catch (error) {
+            console.error("Error fetching quiz data:", error);
+        } 
+    };
+
+
+
+    
     const answers = db.answers;
-    const attempts = db.attempts;
-    const qid = pathname.split("/")[5]
+    
     const parentPath = pathname.split('/').slice(0, -1).join('/');
     const { currentUser } = useSelector((state: any) => state.accountReducer);
-    const quiz = quizzes.filter((q: any) => q.id === qid)
+    //const quiz = quizzes.filter((q: any) => q.id === qid)
     const filteredQuestions = questions.filter((q: any) => q.quizId === qid);
     const { quizStatuses } = useSelector((state: any) => state.quizReducer);
     const quizSubmitted = quizStatuses?.[qid]?.submitted;
-    const userAttempts = attempts ? attempts.filter(attempt => attempt?.userID === currentUser._id) : [];
-    const latestAttempt = userAttempts.sort((a, b) => b.attemptNumber - a.attemptNumber)[0];
-    const latestAnswers = answers?  answers.filter(answer => latestAttempt?.answerID.includes(answer._id)) : [];
-    const attemptHistory = userAttempts.map(attempt => ({
-        attemptNumber: attempt.attemptNumber,
-        score: attempt?.score,
-        date: attempt.date
-    }));
+    
+    //const userAttempts = attempts ?  attempts.filter(attempt => attempt?.userID === currentUser._id) : [];
 
-    console.log('parentPath', parentPath)
-    console.log('pathname', parentPath)
+    //const latestAttempt = userAttempts.sort((a, b) => b.attemptNumber - a.attemptNumber)[0];
+    
+    //const latestAnswers = answers?  answers.filter(answer => latestAttempt?.answerID.includes(answer._id)) : [];
+    
+    // const attemptHistory = userAttempts.map(attempt => ({
+    //     attemptNumber: attempt.attemptNumber,
+    //     score: attempt?.score,
+    //     date: attempt.date
+    // }));
+   
+
+    
+    
+
+
+    useEffect(() => {
+        fetchQuizData();
+        getAttemptsbyUIdandQId();
+        
+    }, [currentUser, qid])
+
 
     return (
+        console.log("quiz",quiz),
         <div>
             <div className="container">
                 <div className="row">
@@ -43,13 +93,14 @@ export default function QuizDetailScreen() {
                                 </Link>
                             </>
                         )}
+                        
                     </div>
                 </div>
             </div>
             
 
-            {quizzes.filter((quiz: any) => parseInt(quiz.id) === parseInt(qid)).map((quiz: any) => (
-                <div key={quiz.id} id="wd-assignments-editor">
+            
+                <div id="wd-assignments-editor">
                     {currentUser.role === "FACULTY" ? (
                         <>
                             <hr />
@@ -134,7 +185,7 @@ export default function QuizDetailScreen() {
                         </>
                     ) : (
                         <>
-                        {quizzes.filter((quiz: any) => parseInt(quiz.id) === parseInt(qid)).map((quiz: any) => (
+                        
                             <div key={quiz.id} id="wd-assignments-editor" className="text-start">
                                 <h2>{quiz.title}</h2>
                                 <hr />
@@ -150,7 +201,7 @@ export default function QuizDetailScreen() {
                                     </p>
                                 </div><hr /><br />
                             </div>
-                        ))}
+                        
 
                         {userAttempts.length < quiz.attempts && (
                         <div className="text-center">
@@ -174,12 +225,13 @@ export default function QuizDetailScreen() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {attemptHistory.map((attempt, index) => (
+                                {userAttempts.map((attempt, index) => (
                                     <tr key={index}>
                                         <td>
-                                            {attempt.attemptNumber === latestAttempt.attemptNumber ? 'LATEST' : ''}
+                                            {/* {attempt.date === latestAttempt.date ? 'LATEST' : ''} */}
                                         </td>
-                                        <td style = {{color: "red"}}>Attempt {attempt.attemptNumber}</td>
+                                        <td style = {{color: "red"}}>Attempt {index}</td>
+                                        
                                         <td>{attempt?.score} out of {quiz.points}</td>
                                     </tr>
                                 ))}
@@ -191,7 +243,7 @@ export default function QuizDetailScreen() {
                             <h6>Submitted {latestAttempt?.date}</h6>
                         </div><br />
 
-                        {filteredQuestions.map((question, index) => {
+                        {questions.map((question, index) => {
                             const userAnswer = latestAnswers.find(answer => answer.questionID === question._id);
                             const isUserAnswerCorrect = userAnswer && userAnswer.isCorrect;
                             const userSelectedAnswer = userAnswer ? userAnswer.answer[0] : null;
@@ -224,7 +276,7 @@ export default function QuizDetailScreen() {
                                     }}>
                                         <p>{question.question}</p>
 
-                                        {question.type === "Multiple Choice" && (
+                                        {/* {question.type === "Multiple Choice" && (
                                             <div>
                                                 <hr />
                                                 {question.option.map((opt, idx) => {
@@ -324,7 +376,7 @@ export default function QuizDetailScreen() {
                                                     );
                                                 })}
                                             </div>
-                                        )}
+                                        )} */}
 
                                         {question.type === "Fill in the blank" && (
                                             <div>
@@ -379,7 +431,7 @@ export default function QuizDetailScreen() {
                     </div> 
                     )}
                 </div>
-            ))}
+            
         </div>
     );
 }
