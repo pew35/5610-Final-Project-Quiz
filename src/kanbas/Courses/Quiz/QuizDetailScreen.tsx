@@ -51,11 +51,11 @@ export default function QuizDetailScreen() {
     }, [qid, currentUser._id]);
 
     if (loading) {
-        return <div>Loading...</div>;
+        console.log("Loading...");
     }
 
     if (!quiz) {
-        return <div>Quiz not found</div>;
+        console.log("Quiz not found");
     }
 
     const userAttempts = attempts.filter(attempt => attempt.userId === currentUser._id);
