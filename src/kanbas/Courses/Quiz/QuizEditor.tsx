@@ -104,6 +104,7 @@ export default function QuizEditor(
 
     const [activeTab, setActiveTab] = useState("details");
 
+
     const [quizDetails, setQuizDetails] = useState<Quiz>({
         _id: qid,
         title: "new quiz",
@@ -133,38 +134,78 @@ export default function QuizEditor(
         }));
       };
     
-      // ATTENTION: did not test questions saving
+      // need to modify for the backend
       const handleSaveQuizDetails = async () => {
         try {
-            // First save the quiz details
+            // Log the data we're about to send
+            console.log("Attempting to save quiz with data:", {
+                quizDetails,
+                qid,
+                cid,
+                questions
+            });
+
+            // 1. First, save/update the quiz details
             const updatedQuizData = {
                 ...quizDetails,
                 _id: qid,
                 courseId: cid,
+                numberOfQuestions: savedQuestions.length + questions.length
             };
             
-            const updatedQuiz = await quizzesClient.updateQuiz(updatedQuizData);
-            console.log("Quiz saved successfully:", updatedQuiz);
-            
-            // Then save any unsaved questions
-            for (const question of questions) {
-                try {
-                    await quizzesClient.createQuestionForQuiz(question);
-                } catch (error) {
-                    console.error("Error saving question:", error);
+            try {
+                const savedQuiz = await quizzesClient.updateQuiz(updatedQuizData);
+                console.log("Quiz details saved successfully:", savedQuiz);
+            } catch (quizError) {
+                console.error("Error saving quiz details:", quizError);
+                console.error("Quiz data that failed:", updatedQuizData);
+                throw quizError;
+            }
+
+            // 2. Save questions one by one with error handling for each
+            if (questions.length > 0) {
+                console.log("Attempting to save questions:", questions);
+                
+                for (const question of questions) {
+                    const questionData = {
+                        qid: qid,
+                        cid: cid,
+                        title: question.title || "Untitled Question",
+                        type: question.type,
+                        questions: question.questions || "",
+                        options: Array.isArray(question.options) ? question.options : [],
+                        answers: Array.isArray(question.answers) ? question.answers : [],
+                        points: Number(question.points) || 0
+                    };
+
+                    try {
+                        console.log("Attempting to save question:", questionData);
+                        const savedQuestion = await quizzesClient.createQuestionForQuiz(questionData);
+                        console.log("Question saved successfully:", savedQuestion);
+                    } catch (questionError) {
+                        console.error("Error saving question:", questionError);
+                        console.error("Question data that failed:", questionData);
+                        throw questionError;
+                    }
                 }
             }
-            
-            // Clear the unsaved questions array
+
+            // 3. Clear and refresh questions
             setQuestions([]);
-            
-            // Navigate back to quiz details page
+            await fetchQuestions();
+
+            // 4. Success message
+            alert("Quiz and questions saved successfully!");
+
+            // 5. Navigate back
             navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}`);
-        } catch (error) {
-            console.error("Error saving quiz:", error);
+
+        } catch (error: any) {
+            console.error("Full error details:", error);
+            console.error("Error response:", error.response?.data);
+            alert(`Error saving quiz: ${error.message || 'Unknown error occurred'}`);
         }
     };
-    
 
     // this is all const related to adding new questions
     const [questions, setQuestions] = useState<Question[]>([]);
@@ -606,7 +647,7 @@ export default function QuizEditor(
                 </div>
             </div>
                 <hr />
-            
+
                                                     
 
         </div>
@@ -714,7 +755,7 @@ export default function QuizEditor(
                 >
                     Cancel
                 </button>
-                
+
                 {/* Save Button */}
                 <button
                     className="btn btn-danger me-2"
@@ -723,16 +764,6 @@ export default function QuizEditor(
                     Save
                 </button>
 
-                {/* Save and Publish Button */}     
-            {/*                     <button
-                    className="btn btn-primary"
-                    onClick={() => {
-                    handleSaveAndPublishQuiz(); // Save and publish the quiz
-                    window.location.href = "/quiz-list"; // Replace with your route for the Quiz List screen
-                    }}
-                >
-                    Save and Publish
-                </button> */}
             </div>
         </div>
     );
