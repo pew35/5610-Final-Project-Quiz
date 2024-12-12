@@ -63,7 +63,7 @@ export default function QuizDetailScreen() {
                     points: quiz.points,
                     assignmentGroup: quiz.assignmentGroup,
                     shuffleAnswers: quiz.shuffleAnswers ? "Yes" : "No",
-                    timeLimit: `${quiz.timeLimit} Minutes`,
+                    timeLimit: `${quiz.timeLimit || 20} Minutes`,
                     title: quiz.title,
                     dueDate: quiz.dueDate,
                     availableFrom: quiz.availableDate,
