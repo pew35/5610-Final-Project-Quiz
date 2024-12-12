@@ -124,6 +124,7 @@ export default function Quiz() {
                         <BsGripVertical className="me-2 fs-2" />
                         Quizzes
                     </div>
+                    {JSON.stringify(quizzes)}
 
                     {quizzes && (
                         <ul className="list-group rounded-0">

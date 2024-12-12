@@ -16,7 +16,7 @@ export default function QuizDetailScreen() {
     const filteredQuestions = questions.filter((q: any) => q.quizId === qid);
     const { quizStatuses } = useSelector((state: any) => state.quizReducer);
     const quizSubmitted = quizStatuses?.[qid]?.submitted;
-    const userAttempts = attempts ? attempts.filter(attempt => attempt?.userID === currentUser._id) : [];
+    const userAttempts = attempts ?  attempts.filter(attempt => attempt?.userID === currentUser._id) : [];
     const latestAttempt = userAttempts.sort((a, b) => b.attemptNumber - a.attemptNumber)[0];
     const latestAnswers = answers?  answers.filter(answer => latestAttempt?.answerID.includes(answer._id)) : [];
     const attemptHistory = userAttempts.map(attempt => ({
@@ -24,6 +24,7 @@ export default function QuizDetailScreen() {
         score: attempt?.score,
         date: attempt.date
     }));
+   
 
     console.log('parentPath', parentPath)
     console.log('pathname', parentPath)
