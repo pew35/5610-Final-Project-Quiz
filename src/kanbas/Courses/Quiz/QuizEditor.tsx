@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import QuizEditorMultipleChoice from "./QuizEditorType/QuizEditorMutlipleChoice";
 import QuizEditorTrueFalse from "./QuizEditorType/QuizEditorTrueFalse";
 import QuizEditorFillInTheBlank from "./QuizEditorType/QuizEditorFillInTheBlank";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import * as quizzesClient from "./client";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,20 +22,23 @@ type Question = {
 
 
 type Quiz = {
-    id: number;
+    _id?: string;
     title: string;
+    description: string;
     instructions: string;
-    multipleAttempts: boolean;
+    publish: boolean;
     attempts: number;
+    multipleAttempts: boolean;
     availableDate: string;
     availableUntilDate: string;
     dueDate: string;
     points: number;
     numberOfQuestions: number;
     timeLimit: number;
-    quizType: string; // NEW
-    assignmentGroup: string; // NEW
-    shuffleAnswers: boolean; // NEW
+    quizType: string;
+    assignmentGroup: string;
+    shuffleAnswers: boolean;
+    courseId?: string;
 };
 
 
@@ -47,16 +50,35 @@ export default function QuizEditor(
     const cid = pathname.split("/")[3]
     const parentPath = pathname.split('/').slice(0, -1).join('/');
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [quiz, setQuiz] = useState<any>(null); // Local state to hold quiz data
     
     const fetchQuiz = async () => {
         try {
-          const quizData = await quizzesClient.findQuizById(qid as string);
-          console.log('Set quiz in QuizEditor', quizData)
-          setQuiz(quizData);
+            const quizData = await quizzesClient.findQuizById(qid);
+            if (quizData) {
+                setQuiz(quizData);
+                setQuizDetails({
+                    ...quizData,
+                    title: quizData.title || "",
+                    description: quizData.description || "",
+                    instructions: quizData.instructions || "",
+                    attempts: quizData.attempts || 0,
+                    multipleAttempts: quizData.multipleAttempts || false,
+                    availableDate: quizData.availableDate || "",
+                    availableUntilDate: quizData.availableUntilDate || "",
+                    dueDate: quizData.dueDate || "",
+                    points: quizData.points || 0,
+                    numberOfQuestions: quizData.numberOfQuestions || 0,
+                    timeLimit: quizData.timeLimit || 0,
+                    quizType: quizData.quizType || "Graded Quiz",
+                    assignmentGroup: quizData.assignmentGroup || "Quizzes",
+                    shuffleAnswers: quizData.shuffleAnswers || false,
+                });
+            }
         } catch (error) {
-          console.error("Failed to fetch quiz:", error);
+            console.error("Failed to fetch quiz:", error);
         }
     };
     useEffect(() => {
@@ -68,9 +90,11 @@ export default function QuizEditor(
 
 
     const [quizDetails, setQuizDetails] = useState<Quiz>({
-        id: parseInt(qid) || 0,
+        _id: qid,
         title: "",
+        description: "",
         instructions: "",
+        publish: false,
         attempts: 0,
         multipleAttempts: false,
         availableDate: "",
@@ -79,10 +103,10 @@ export default function QuizEditor(
         points: 0,
         numberOfQuestions: 0,
         timeLimit: 0,
-        quizType: "Graded Quiz", // NEW: Default value based on backend schema
-        assignmentGroup: "Quizzes", // NEW: Default value based on backend schema
-        shuffleAnswers: true, // NEW: Default value based on backend schema
-      });
+        quizType: "Graded Quiz",
+        assignmentGroup: "Quizzes",
+        shuffleAnswers: true,
+    });
 
       const handleEditorChange = (content: string) => {
         setQuizDetails((prev) => ({ ...prev, instructions: content }));
@@ -98,14 +122,17 @@ export default function QuizEditor(
       // need to modify for the backend
       const handleSaveQuizDetails = async () => {
         try {
-            const updatedQuiz = await quizzesClient.updateQuiz({
-                _id: qid,
+            const updatedQuizData = {
                 ...quizDetails,
-                questions: [...questions, ...savedQuestions]
-            });
+                _id: qid,
+                courseId: cid,
+            };
+            
+            const updatedQuiz = await quizzesClient.updateQuiz(updatedQuizData);
             console.log("Quiz saved successfully:", updatedQuiz);
-            // Optionally refresh the quiz data
-            await fetchQuiz();
+            
+            // Navigate back to quiz details page
+            navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}`);
         } catch (error) {
             console.error("Error saving quiz:", error);
         }
@@ -581,10 +608,7 @@ export default function QuizEditor(
                 {/* Save Button */}
                 <button
                     className="btn btn-danger me-2"
-                    onClick={() => {
-                    handleSaveQuizDetails(); // Save the quiz details
-                    window.location.href = `/quiz/${quizDetails.id}/details`; // Replace with your route for the Quiz Details screen
-                    }}
+                    onClick={handleSaveQuizDetails}
                 >
                     Save
                 </button>
