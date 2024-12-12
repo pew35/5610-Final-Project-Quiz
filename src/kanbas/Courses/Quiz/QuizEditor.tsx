@@ -49,8 +49,6 @@ export default function QuizEditor(
     const quizId = pathname.split("/")[5]
     const courseId = pathname.split("/")[3]
     const cid = pathname.split("/")[3]
-    const parentPath = pathname.split('/').slice(0, -1).join('/');
-    const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const [quiz, setQuiz] = useState<any>(null); // Local state to hold quiz data
@@ -79,6 +77,9 @@ export default function QuizEditor(
                     assignmentGroup: quizData.assignmentGroup || "Quizzes",
                     shuffleAnswers: quizData.shuffleAnswers || false,
                 });
+
+                // Initialize questions only once when fetching quiz data
+                setQuestions(quizData.questions || []);
             }
         } catch (error) {
             console.error("Failed to fetch quiz:", error);
@@ -188,7 +189,7 @@ export default function QuizEditor(
     };
 
     const cancelQuestion = async (_id: string) => {
-        // call API to delete question
+        // this is not deleting question, this is cancalling a question so no need to call any api
         setQuestions((prevQuestions) =>
           prevQuestions.filter((question) => question._id !== _id)
         );
@@ -204,16 +205,29 @@ export default function QuizEditor(
         }
     };
 
-    const deleteSavedQuestion = async (_id: string) => {
+    const deleteSavedQuestion = async (questionId: string) => {
         try {
-          await quizzesClient.deleteQuestions(quizId, _id)
-          setSavedQuestions((prevSavedQuestions) =>
-            prevSavedQuestions.filter((question) => question._id !== _id)
-          );
+            const response = await quizzesClient.deleteQuestions(quizId, questionId); // Replace with your actual API function
+            if (response.success) {
+                console.log("Successfully deleted question:", questionId);
+    
+                // Update state to reflect deletion
+                setQuestions((prevQuestions) =>
+                    prevQuestions.filter((q) => q._id !== questionId)
+                );
+    
+                // Reload the page to ensure consistent UI
+                window.location.reload();
+            } else {
+                console.error("Delete operation failed:", response.message);
+                alert("Failed to delete the question. Please try again.");
+            }
         } catch (error) {
-          console.error("Error deleting saved question:", error);
+            console.error("Error deleting question:", error);
+            alert("An error occurred while deleting the question. Please try again.");
         }
     };
+    
 
     // Render fields based on question type
     const renderQuestionTypeFields = (question: Question, updateQuestionField: (_id: string, key: keyof Question, value: any) => void ) => {
