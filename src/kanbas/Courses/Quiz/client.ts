@@ -22,20 +22,20 @@ export const findQuestionsByQuiz = async (quizId: string) => {
     const { data } = await axios.get(`${QUIZZES_API}/${quizId}/questions`);
     return data;
 }
-export const findAttemptsByQuizID = async (quizId: string) => {
-    const { data } = await axios.get(`${QUIZZES_API}/${quizId}/attempts`);
-    return data;
-}
+// export const findAttemptsByQuizID = async (quizId: string) => {
+//     const { data } = await axios.get(`${QUIZZES_API}/${quizId}/attempts`);
+//     return data;
+// }
 
 export const createAttempt = async (attempt: any) => {
     const response = await axios.post(`/api/attempts`, attempt);
     return response.data;
 }
 
-export const findAttempts = async (userId: string, quizId: string) => {
-    const response = await axios.get(`/api/attempts`);
-    return response.data;
-};
+// export const findAttempts = async (userId: string, quizId: string) => {
+//     const response = await axios.get(`/api/attempts`);
+//     return response.data;
+// };
 
 export const findAttemptsAnswers = async (attemptId: string) => {
     const response = await axios.get(`/api/attempts/${attemptId}/attemptAnswer`);
@@ -56,3 +56,14 @@ export const deleteQuestionFromQuiz = async (questionId: string) => {
     );
     return data;
 };
+export const findAttemptsbyUIdandQId = async (userID: string, quizID: string) => {
+    console.log("findAttemptsbyUIdandQId: ", userID, quizID)
+    const { data } = await axios.get(`${QUIZZES_API}/${quizID}/${userID}/attempts`);
+    return data;
+}
+
+export const findLatestAttemptsbyUIdandQId= async(_id: any, qid: string) => {
+    const { data } = await axios.get(`${QUIZZES_API}/${qid}/${_id}/latestattempts`);
+    return data;
+}
+
