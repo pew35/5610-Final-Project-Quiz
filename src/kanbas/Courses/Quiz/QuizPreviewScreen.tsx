@@ -25,6 +25,7 @@ export default function QuizPreviewScreen() {
     const [quizStarted, setQuizStarted] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const userId = currentUser._id;
 
     const handleStartQuiz = () => {
         if (!quizStarted) {
@@ -48,8 +49,10 @@ export default function QuizPreviewScreen() {
     
     useEffect(() => {
         fetchQuizData();
-    }, [qid]);
-
+        console.log("User Answers Before Submitting:", answers);
+        console.log("Current Question Index Changed:", currentQuestionIndex);
+    }, [currentQuestionIndex]);
+    
     const handleNext = () => {
         if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -58,15 +61,121 @@ export default function QuizPreviewScreen() {
 
     const handleAnswerChange = (value: string) => {
         handleStartQuiz();
-        setAnswers({
-            ...answers,
+        setAnswers(prevAnswers => ({
+            ...prevAnswers,
             [questions[currentQuestionIndex]._id]: value,
+        }));
+    };
+
+    const calculateScore = (answers: Record<string, string>) => {
+        let score = 0;
+        console.log("User Answers:", answers);
+    
+        questions.forEach((question) => {
+            const correctAnswer = question.answer ? question.answer[0] : ''; 
+            console.log(`Question ID: ${question._id}, Correct Answer: ${correctAnswer}`);
+    
+            if (question.type === "Multiple Choice" || question.type === "True/False") {
+                const userAnswer = answers[question._id];
+                console.log(`User Answer: ${userAnswer}`);
+    
+                if (userAnswer === correctAnswer) {
+                    score += question.points;
+                }
+            } else if (question.type === "Fill in the Blank") {
+                const userAnswer = answers[question._id];
+                console.log(`User Answer (Fill in the Blank): ${userAnswer}`);
+    
+                if (userAnswer === correctAnswer) {
+                    score += question.points; 
+                }
+            }
         });
+    
+        console.log("Total Score:", score);
+        return score; 
+    };
+
+    const checkAnswer = (questionId: string, userAnswer: string): boolean => {
+        const question = questions.find(q => q._id === questionId);
+    
+        if (!question) {
+            console.error("Question not found:", questionId);
+            return false;
+        }
+    
+        const correctAnswer = question.correctAnswer;
+    
+        if (question.type === "Multiple Choice" || question.type === "True or False") {
+            return userAnswer === correctAnswer;
+        } else if (question.type === "Fill in the blank") {
+            return userAnswer === correctAnswer;
+        }
+    
+        return false;
+    };
+
+    const getAttemptNumber = async (userId: string, quizId: string) => {
+        try {
+            const previousAttempts = await quizClient.findLatestAttemptsbyUIdandQId(userId, quizId);
+    
+            if (!Array.isArray(previousAttempts)) {
+                console.warn("Previous attempts is not an array, returning 1 for attempt number.");
+                return 1;
+            }
+    
+            if (previousAttempts.length > 0) {
+                return previousAttempts.length + 1;
+            }
+    
+            return 1;
+        } catch (error) {
+            console.error("Error fetching previous attempts:", error);
+            return 1;
+        }
     };
 
     const handleSubmit = async () => {
         try {
-            await quizClient.createAttempt( { answers });
+            const attemptId = Date.now().toString();
+            const date = new Date().toISOString();
+            const userId = currentUser._id;
+            const score = calculateScore(answers);
+            const attemptNumber = await getAttemptNumber(userId, qid);
+            console.log("current Attempt Number is: " + attemptNumber)
+    
+            const attemptData = {
+                _id: attemptId,
+                date,
+                score,
+                answerId: [],
+                quizId: qid,
+                userId,
+                attemptNumber
+            };
+    
+            const savedAttempt = await quizClient.createAttempt(attemptData);
+    
+            for (const [questionId, answer] of Object.entries(answers)) {
+                const answerId = Date.now().toString();
+                if (answer === undefined) {
+                    console.warn(`Answer for questionId ${questionId} is undefined.`);
+                    continue; 
+                }
+                const isCorrect = checkAnswer(questionId, answer);
+    
+                const answerData = {
+                    _id: answerId,
+                    attemptId: savedAttempt._id,
+                    questionId,
+                    answer: [answer], 
+                    isCorrect
+                };
+    
+                await quizClient.saveAnswer(answerData);
+                savedAttempt.answerId.push(answerId);
+            }
+    
             dispatch(setQuizSubmitted({ quizId: qid }));
             navigate(`/Kanbas/Courses/${cid}/Quizzes/${qid}`);
             alert("Quiz submitted!");
@@ -75,7 +184,7 @@ export default function QuizPreviewScreen() {
             alert("Failed to submit quiz. Please try again.");
         }
     };
-    
+
     const currentQuestion = questions[currentQuestionIndex];
     const quiz = quizzes[0];
 
