@@ -41,7 +41,7 @@ export const createAttempt = async (attempt: any) => {
 // };
 
 export const findAttemptsAnswers = async (attemptId: string) => {
-    const response = await axios.get(`/api/attempts/${attemptId}/attemptAnswer`);
+    const response = await axios.get(`/api/attempts/${attemptId}/attemptAnswers`);
     return response.data;
 };
 
