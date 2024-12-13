@@ -1,7 +1,7 @@
 import { useLocation, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {useEffect, useState} from "react";
-import * as db from "../../Database";
+
 import * as client from "./client";
 import { setQuizzes, addQuiz, deleteQuiz, updateQuiz } from "./quizReducer"
 
@@ -14,71 +14,199 @@ export default function QuizDetailScreen() {
         points: number;
         answer: string;
         option: string[];  // Array of options
-      }
+    }
+
+    interface QuizDetails {
+        quizType: string;
+        points: number;
+        assignmentGroup: string;
+        shuffleAnswers: string;
+        timeLimit: string;
+        multipleAttempts: string;
+        viewResponses: string;
+        showCorrectAnswers: string;
+        oneQuestionAtATime: string;
+        requireRespondusLockDown: string;
+        requiredToViewResults: string;
+        webcamRequired: string;
+        lockQuestionsAfterAnswering: string;
+        dueDate: string;
+        availableFrom: string;
+        availableUntil: string;
+        forWho: string;
+        title: string;
+        attempts: number;
+        questionsCount: number;
+        availableDate: string;
+        availableUntilDate: string;
+    }
+    
     
     const dispatch = useDispatch();
     const {pathname} = useLocation();
     const qid = pathname.split("/")[5];
     const { currentUser } = useSelector((state: any) => state.accountReducer);
+    const { quizzes = [] } = useSelector((state: any) => state.quizReducerCreate || {});
+    const { questions = [] } = useSelector((state: any) => state.questions || { questions: [] });
+    const { quizStatuses = {} } = useSelector((state: any) => state.quizReducer || {});
 
     const [userAttempts, setAttempts] = useState<any[]>([]); // attempts found by user id and quiz id
     const [latestAttempt, setLatestAttempt] = useState<any>({}); // lstest attempt found by user id and quiz id
     const [latestAnswers, setLatestAnswers] = useState<any[]>([]); // dont know what this is
-    const {quizzes} = useSelector((state: any) => state.quizReducerCreate);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
     const quiz = quizzes.find((q: any) => q._id === qid);
-    const [questions, setQuestions] = useState<any[]>([]);// questions found by quiz id no need to filter change name to questions
+    const [localQuestions, setLocalQuestions] = useState<any[]>([]);
     //const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
+    const [quizDetails, setQuizDetails] = useState<QuizDetails>({
+        quizType: "Graded Quiz",
+        points: 29,
+        assignmentGroup: "QUIZZES",
+        shuffleAnswers: "No",
+        timeLimit: "30 Minutes",
+        multipleAttempts: "No",
+        viewResponses: "Always",
+        showCorrectAnswers: "Immediately",
+        oneQuestionAtATime: "Yes",
+        requireRespondusLockDown: "No",
+        requiredToViewResults: "No",
+        webcamRequired: "No",
+        lockQuestionsAfterAnswering: "No",
+        dueDate: "Sep 21 at 1pm",
+        availableFrom: "Sep 21 at 11:40am",
+        availableUntil: "Sep 21 at 1pm",
+        forWho: "Everyone",
+        title: "Q1 - HTML",
+        attempts: 0,
+        questionsCount: 0,
+        availableDate: "",
+        availableUntilDate: ""
+    });
+
+    
     const getAttemptsbyUIdandQId = async () => {
-        try {
-            console.log("Attempt found: ", currentUser._id, qid)
-            const userattempts = await client.findAttemptsbyUIdandQId(currentUser._id, qid);
-            setAttempts(userattempts);
-            if (userattempts.length > 0) {
-                const latestAttempt = await getlatestAttemptBYUIdandQId();
-                if (latestAttempt) {
-                    await fetchlatestAnswers();
-                }
-            }
-        } catch (error) {
-            console.error("Error fetching attempts:", error);
+        console.log("Attempt found: ", currentUser._id, qid)
+        const userattempts = await client.findAttemptsbyUIdandQId(currentUser._id, qid);
+        if (userattempts.length > 0) {
+            getlatestAttemptBYUIdandQId();
+            fetchlatestAnswers();
+            
         }
+        setAttempts(userattempts);
     }
     const getlatestAttemptBYUIdandQId = async () => {
         const latestAttempt = await client.findLatestAttemptsbyUIdandQId(currentUser._id, qid);
         setLatestAttempt(latestAttempt);
-        return latestAttempt;
     }
 
     const fetchQuizData = async () => {
         try {
             const quizQuestions = await client.findQuestionsByQuiz(qid);   
-            setQuestions(quizQuestions);
+            setLocalQuestions(quizQuestions);
         } catch (error) {
             console.error("Error fetching quiz data:", error);
         } 
     };
 
     const fetchlatestAnswers = async () => {
-        try {
-            if (latestAttempt && latestAttempt._id) {
-                const answers = await client.findAttemptsAnswers(latestAttempt._id);
-                setLatestAnswers(answers);
-            }
-        } catch (error) {
-            console.error("Error fetching latest answers:", error);
-        }
+        const answers = await client.findAttemptsAnswers(latestAttempt._id);
+        setLatestAnswers(answers);
     }
 
+    const fetchAllQuizData = async () => {
+        try {
+            setLoading(true);
+            
+            // 获取测验数据
+            const quiz = await client.findQuizById(qid);
+            if (quiz) {
+                setQuizDetails({
+                    ...quizDetails,
+                    quizType: quiz.quizType || "Graded Quiz",
+                    points: quiz.points || 50,
+                    assignmentGroup: quiz.assignmentGroup || "QUIZZES",
+                    shuffleAnswers: quiz.shuffleAnswers ? "Yes" : "No",
+                    timeLimit: `${quiz.timeLimit || 20} Minutes`,
+                    title: quiz.title || "Quiz",
+                    dueDate: quiz.dueDate || "",
+                    availableFrom: quiz.availableDate || "",
+                    availableUntil: quiz.availableUntilDate || "",
+                    attempts: quiz.attempts || 0,
+                    questionsCount: quiz.questionsCount || 0,
+                    availableDate: quiz.availableDate || "",
+                    availableUntilDate: quiz.availableUntilDate || ""
+                });
+            }
 
+            // 获取问题数据
+            const quizQuestions = await client.findQuestionsByQuiz(qid);
+            setLocalQuestions(quizQuestions || []);
 
-    
-    //const answers = db.answers;
-    
+            // 获取尝试记录
+            if (currentUser?._id) {
+                const attempts = await client.findAttemptsbyUIdandQId(currentUser._id, qid);
+                setAttempts(attempts || []);
+
+                if (attempts?.length > 0) {
+                    const latest = await client.findLatestAttemptsbyUIdandQId(currentUser._id, qid);
+                    setLatestAttempt(latest || {});
+
+                    if (latest?._id) {
+                        const answers = await client.findAttemptsAnswers(latest._id);
+                        setLatestAnswers(answers || []);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching quiz data:", error);
+            setError("Failed to load quiz data. Please try again later.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAllQuizData();
+        
+        // 可选：添加自动刷新
+        const intervalId = setInterval(fetchAllQuizData, 30000);
+        return () => clearInterval(intervalId);
+    }, [currentUser?._id, qid]);
+
+    if (loading && !quizDetails.title) {
+        return (
+            <div className="d-flex justify-content-center align-items-center" style={{ height: '200px' }}>
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="alert alert-danger" role="alert">
+                {error}
+                <button 
+                    className="btn btn-link"
+                    onClick={() => {
+                        setError(null);
+                        fetchAllQuizData();
+                    }}
+                >
+                    Retry
+                </button>
+            </div>
+        );
+    }
+
     const parentPath = pathname.split('/').slice(0, -1).join('/');
     
     //const quiz = quizzes.filter((q: any) => q.id === qid)
-    const filteredQuestions = questions.filter((q: any) => q.quizId === qid);
-    const { quizStatuses } = useSelector((state: any) => state.quizReducer);
+    const filteredQuestions = localQuestions.filter((q: any) => q.quizId === qid);
+
     const quizSubmitted = quizStatuses?.[qid]?.submitted;
     
     //const userAttempts = attempts ?  attempts.filter(attempt => attempt?.userID === currentUser._id) : [];
@@ -98,16 +226,16 @@ export default function QuizDetailScreen() {
     
 
 
-    useEffect(() => {
-        fetchQuizData();
-        getAttemptsbyUIdandQId();
-        
-    }, [currentUser, qid])
-
-
     return (
-        console.log("quiz",quiz),
         <div>
+            {loading && (
+                <div className="position-fixed top-0 end-0 p-3">
+                    <div className="spinner-border text-primary spinner-border-sm" role="status">
+                        <span className="visually-hidden">Refreshing...</span>
+                    </div>
+                </div>
+            )}
+            
             <div className="container">
                 <div className="row">
                     <div className="col text-center">
@@ -132,7 +260,7 @@ export default function QuizDetailScreen() {
                     {currentUser.role === "FACULTY" ? (
                         <>
                             <hr />
-                            <h4>{quiz.title}</h4>
+                            <h4>{quizDetails.title}</h4>
 
                             {/* Quiz details for faculty */}
                             <div className="container">
@@ -156,10 +284,10 @@ export default function QuizDetailScreen() {
 
                                     <div className="col d-flex flex-column align-items-start p-2 my-2">
                                         <span className="text-start my-1">Graded Quiz</span>
-                                        <span className="text-start my-1">{quiz.points || 50} </span>
+                                        <span className="text-start my-1">{quizDetails.points || 50} </span>
                                         <span className="text-start my-1">QUIZZES</span>
                                         <span className="text-start my-1">No</span>
-                                        <span className="text-start my-1">{quiz.timeLimit} Minutes</span>
+                                        <span className="text-start my-1">{quizDetails.timeLimit} Minutes</span>
                                         <span className="text-start my-1">No</span>
                                         <span className="text-start my-1">Always</span>
                                         <span className="text-start my-1">Immediately</span>
@@ -195,16 +323,16 @@ export default function QuizDetailScreen() {
                             <div className="container">
                                 <div className="row">
                                     <div className="col d-flex flex-column align-items-start">
-                                        <span className="text-start">{quiz.dueDate}</span>
+                                        <span className="text-start">{quizDetails.dueDate}</span>
                                     </div>
                                     <div className="col d-flex flex-column align-items-start">
                                         <span className="text-start">Everyone</span>
                                     </div>
                                     <div className="col d-flex flex-column align-items-start">
-                                        <span className="text-end">{quiz.availableDate}</span>
+                                        <span className="text-end">{quizDetails.availableDate}</span>
                                     </div>
                                     <div className="col d-flex flex-column align-items-start">
-                                        <span className="text-end">{quiz.availableUntilDate}</span>
+                                        <span className="text-end">{quizDetails.availableUntilDate}</span>
                                     </div>
                                 </div>
                             </div>
@@ -220,12 +348,12 @@ export default function QuizDetailScreen() {
 
                                 <div className="text-start mb-3">
                                     <p>
-                                        <strong>Due</strong>  {quiz.dueDate}   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <strong>Points</strong>  {quiz.points} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <strong>Attempts</strong>  {quiz.attempts} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <strong>Questions</strong>  {quiz.questionsCount} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <strong>Available</strong>  {quiz.availableDate} - {quiz.availableUntilDate} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <strong>Time Limit</strong>  {quiz.timeLimit}
+                                        <strong>Due</strong>  {quizDetails.dueDate}   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <strong>Points</strong>  {quizDetails.points} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <strong>Attempts</strong>  {quizDetails.attempts} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <strong>Questions</strong>  {quizDetails.questionsCount} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <strong>Available</strong>  {quizDetails.availableDate} - {quiz.availableUntilDate} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <strong>Time Limit</strong>  {quizDetails.timeLimit}
                                     </p>
                                 </div><hr /><br />
                             </div>
@@ -260,7 +388,7 @@ export default function QuizDetailScreen() {
                                         </td>
                                         <td style = {{color: "red"}}>Attempt {index+1}</td>
                                         
-                                        <td>{attempt?.score} out of {quiz.points}</td>
+                                        <td>{attempt?.score} out of {quizDetails.points}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -271,7 +399,7 @@ export default function QuizDetailScreen() {
                             <h6>Submitted {latestAttempt?.date}</h6>
                         </div><br />
 
-                        {questions.map((question: Question, index: number) => {
+                        {localQuestions.map((question: Question, index: number) => {
                             const userAnswer = latestAnswers.find(answer => answer.questionID === question._id);
                             const isUserAnswerCorrect = userAnswer && userAnswer.isCorrect;
                             const userSelectedAnswer = userAnswer ? userAnswer.answer[0] : null;
