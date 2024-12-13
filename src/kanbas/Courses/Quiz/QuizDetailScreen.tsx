@@ -13,7 +13,7 @@ export default function QuizDetailScreen() {
         points: number;
         answer: string;
         option: string[];  // Array of options
-      }
+    }
     
     const dispatch = useDispatch();
     const {pathname} = useLocation();
@@ -26,8 +26,6 @@ export default function QuizDetailScreen() {
     const [latestAttempt, setLatestAttempt] = useState<any>({}); // lstest attempt found by user id and quiz id
     const [latestAnswers, setLatestAnswers] = useState<any[]>([]); // dont know what this is
     
-    const {quizzes} = useSelector((state: any) => state.quizReducerCreate);
-    const quiz = quizzes.find((q: any) => q._id === qid);
     const [questions, setQuestions] = useState<any[]>([]);// questions found by quiz id no need to filter change name to questions
     //const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const getAttemptsbyUIdandQId = async () => {
@@ -123,12 +121,8 @@ export default function QuizDetailScreen() {
         return <div>Quiz not found</div>;
     }
 
-    if (!quiz) {
-        return <div>Loading quiz data...</div>;
-    }
-
     return (
-        console.log("quiz",quiz),
+        console.log("quiz",quizData),
         <div>
             <div className="container">
                 <div className="row">
@@ -154,7 +148,7 @@ export default function QuizDetailScreen() {
                     {currentUser.role === "FACULTY" ? (
                         <>
                             <hr />
-                            <h4>{quiz.title}</h4>
+                            <h4>{quizData.title}</h4>
 
                             {/* Quiz details for faculty */}
                             <div className="container">
@@ -178,10 +172,10 @@ export default function QuizDetailScreen() {
 
                                     <div className="col d-flex flex-column align-items-start p-2 my-2">
                                         <span className="text-start my-1">Graded Quiz</span>
-                                        <span className="text-start my-1">{quiz.points || 50} </span>
+                                        <span className="text-start my-1">{quizData.points || 50} </span>
                                         <span className="text-start my-1">QUIZZES</span>
                                         <span className="text-start my-1">No</span>
-                                        <span className="text-start my-1">{quiz.timeLimit} Minutes</span>
+                                        <span className="text-start my-1">{quizData.timeLimit} Minutes</span>
                                         <span className="text-start my-1">No</span>
                                         <span className="text-start my-1">Always</span>
                                         <span className="text-start my-1">Immediately</span>
@@ -217,16 +211,16 @@ export default function QuizDetailScreen() {
                             <div className="container">
                                 <div className="row">
                                     <div className="col d-flex flex-column align-items-start">
-                                        <span className="text-start">{quiz.dueDate}</span>
+                                        <span className="text-start">{quizData.dueDate}</span>
                                     </div>
                                     <div className="col d-flex flex-column align-items-start">
                                         <span className="text-start">Everyone</span>
                                     </div>
                                     <div className="col d-flex flex-column align-items-start">
-                                        <span className="text-end">{quiz.availableDate}</span>
+                                        <span className="text-end">{quizData.availableDate}</span>
                                     </div>
                                     <div className="col d-flex flex-column align-items-start">
-                                        <span className="text-end">{quiz.availableUntilDate}</span>
+                                        <span className="text-end">{quizData.availableUntilDate}</span>
                                     </div>
                                 </div>
                             </div>
@@ -236,24 +230,24 @@ export default function QuizDetailScreen() {
                     ) : (
                         <>
                         
-                            <div key={quiz.id} id="wd-assignments-editor" className="text-start">
-                                <h2>{quiz.title}</h2>
+                            <div key={quizData.id} id="wd-assignments-editor" className="text-start">
+                                <h2>{quizData.title}</h2>
                                 <hr />
 
                                 <div className="text-start mb-3">
                                     <p>
-                                        <strong>Due</strong>  {quiz.dueDate}   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <strong>Points</strong>  {quiz.points} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <strong>Attempts</strong>  {quiz.attempts} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <strong>Questions</strong>  {quiz.questionsCount} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <strong>Available</strong>  {quiz.availableDate} - {quiz.availableUntilDate} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <strong>Time Limit</strong>  {quiz.timeLimit}
+                                        <strong>Due</strong>  {quizData.dueDate}   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <strong>Points</strong>  {quizData.points} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <strong>Attempts</strong>  {quizData.attempts} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <strong>Questions</strong>  {quizData.questionsCount} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <strong>Available</strong>  {quizData.availableDate} - {quizData.availableUntilDate} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <strong>Time Limit</strong>  {quizData.timeLimit}
                                     </p>
                                 </div><hr /><br />
                             </div>
                         
 
-                        {userAttempts.length < quiz.attempts && (
+                        {userAttempts.length < quizData.attempts && (
                         <div className="text-center">
                         <Link to={`${pathname}/take`} id="wd-take-quiz" className="btn btn-danger">
                             Take Quiz
@@ -282,14 +276,14 @@ export default function QuizDetailScreen() {
                                         </td>
                                         <td style = {{color: "red"}}>Attempt {index+1}</td>
                                         
-                                        <td>{attempt?.score} out of {quiz.points}</td>
+                                        <td>{attempt?.score} out of {quizData.points}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table><br /><br />
 
                         <div>
-                            <span>Score for this quiz: <b style={{ fontSize: '20px', fontWeight: 'bold' }}>{latestAttempt?.score}</b> out of {quiz.points}</span>
+                            <span>Score for this quiz: <b style={{ fontSize: '20px', fontWeight: 'bold' }}>{latestAttempt?.score}</b> out of {quizData.points}</span>
                             <h6>Submitted {latestAttempt?.date}</h6>
                         </div><br />
 
@@ -300,7 +294,7 @@ export default function QuizDetailScreen() {
                             const pointsAwarded = isUserAnswerCorrect ? question.points : 0;
 
                             const isFaculty = currentUser.role === 'FACULTY';
-                            const isLastAttempt = userAttempts.length === quiz.attempts;
+                            const isLastAttempt = userAttempts.length === quizData.attempts;
                             const showAnswer = isFaculty || isLastAttempt;
 
                             const questionBackgroundColor = showAnswer ? (isUserAnswerCorrect ? "lightgreen" : "lightcoral") : "gray";

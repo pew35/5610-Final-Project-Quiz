@@ -135,7 +135,6 @@ export default function QuizEditor(
             const updatedQuiz = await quizzesClient.updateQuiz(updatedQuizData);
             console.log("Quiz saved successfully:", updatedQuiz);
             
-            // Navigate back to quiz details page
             navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}`);
         } catch (error) {
             console.error("Error saving quiz:", error);
@@ -184,8 +183,10 @@ export default function QuizEditor(
         if (questionToSave) {
             const savedData = await quizzesClient.createQuestionsForQuiz(questionToSave);
             console.log("successfully save question to db", savedData);
-            setSavedQuestions([questionToSave, ...savedQuestions]); // Add saved question to the top
-            // deleteQuestion(_id); // Remove from editable questions
+            setSavedQuestions([questionToSave, ...savedQuestions]);
+            
+            // Fetch updated quiz data after saving question
+            fetchQuiz();
         }
     };
 
@@ -215,16 +216,23 @@ export default function QuizEditor(
             const savedData = await quizzesClient.updateQuestionsForQuiz(quizId, _id, questionToSave);
             setSavedQuestions([questionToSave, ...savedQuestions]);
             console.log("successfully save question to db", questionToSave);
+            
+            // Fetch updated quiz data after updating question
+            fetchQuiz();
         }
     }
 
     const deleteSavedQuestion = async (questionId: string) => {
         try {
-            const response = await quizzesClient.deleteQuestions(quizId, questionId); // Replace with your actual API function
+            const response = await quizzesClient.deleteQuestions(quizId, questionId);
             if (response.success) {
                 console.log("Successfully deleted question:", questionId);
-                // Update state to reflect deletion
-                setQuestions((prevQuestions) => prevQuestions.filter((q) => q._id !== questionId) );
+                setQuestions((prevQuestions) => 
+                    prevQuestions.filter((q) => q._id !== questionId)
+                );
+                
+                // Fetch updated quiz data after deleting question
+                fetchQuiz();
             } else {
                 console.error("Delete operation failed:", response.message);
                 alert("Failed to delete the question. Please try again.");
@@ -300,7 +308,20 @@ export default function QuizEditor(
 
     return (
         <div>
-            {quiz ? ( <h1>{quiz.title}</h1> ) : ( <p>Loading...</p> )}
+            {quiz ? (
+                <div>
+                    <h1>{quiz.title}</h1>
+                    <div className="total-points" style={{ 
+                        textAlign: "right",
+                        marginRight: "120px",
+                        fontWeight: "bold"
+                    }}>
+                        Total Points: {quiz.points || 0}
+                    </div>
+                </div>
+            ) : (
+                <p>Loading...</p>
+            )}
 
 
             <div>
