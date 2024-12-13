@@ -83,3 +83,9 @@ export const createQuestionsForQuiz = async ( question: any) => {
     console.log("Server side createQuestionsForQuiz: ", question)
     return response.data;
 }
+
+export const updateQuestionsForQuiz = async (quizId: string, questionId: string, updatedQuestion: any) => {
+    console.log("Update question id: ", questionId, updatedQuestion);
+    const response = await axios.put(`${QUIZZES_API}/${quizId}/questions/${questionId}`, updatedQuestion);
+    return response.data;
+}

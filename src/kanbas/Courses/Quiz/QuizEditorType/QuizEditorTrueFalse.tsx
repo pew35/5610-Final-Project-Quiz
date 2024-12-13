@@ -5,13 +5,13 @@ export default function QuizEditorTrueFalse({
     onChange
 }: 
 {
-    question: { _id: string; question: string; Option: string[]; answer: string[] };
-    onChange: (questions: string, Option: string[], answer: string[]) => void;
+    question: { _id: string; question: string; option: string[]; answer: string[] };
+    onChange: (questions: string, option: string[], answer: string[]) => void;
 })
 {
     const fixedOptions = ["True", "False"];
     const [localQuestion, setLocalQuestion] = useState(question.question || "");
-    const [localOptions, setLocalOptions] = useState<string[]>(question.Option || []);
+    const [localOptions, setLocalOptions] = useState<string[]>(question.option || []);
     const [localAnswers, setLocalAnswers] = useState<string[]>(question.answer || []);
     const [inputValue, setInputValue] = useState("");
 
