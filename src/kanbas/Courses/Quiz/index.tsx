@@ -7,7 +7,7 @@ import { BsGripVertical } from "react-icons/bs";
 import GreenCheckmark from "./GreenCheckmark";
 import { MdOutlineRocketLaunch } from "react-icons/md";
 import { IoEllipsisVertical } from "react-icons/io5";
-
+import { useNavigate } from "react-router-dom";
 
 import * as coursesClient from "../client";
 import * as quizzesClient from "./client";
@@ -17,6 +17,7 @@ import { setQuizzes, addQuiz, deleteQuiz, updateQuiz } from "./quizReducer"
 export default function Quiz() {
     const { cid } = useParams();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const { quizzes = [] } = useSelector((state: any) => state.quizReducerCreate || {});
     //console.log("Quizzes in component:", quizzes);
@@ -24,6 +25,35 @@ export default function Quiz() {
     const { currentUser } = useSelector((state: any) => state.accountReducer);
     const [latestAttempt, setLatestAttempt] = useState<any>({});
     const canEdit = ["FACULTY", "TA"].includes(currentUser?.role);
+
+    const createNewQuiz = async () => {
+        const newQuiz = {
+            title: "New Quiz",
+            description: "New Quiz Description",
+            publish: false,
+            attempts: 1,
+            multipleAttempts: false,
+            availableDate: new Date().toISOString().split('T')[0],
+            availableUntilDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            points: 100,
+            numberOfQuestions: 0,
+            timeLimit: 20,
+            quizType: "Graded Quiz",
+            assignmentGroup: "Quizzes",
+            shuffleAnswers: true,
+            courseId: cid
+        };
+    
+        try {
+            const response = await coursesClient.createQuizForCourse(cid as string, newQuiz);
+            dispatch(addQuiz(response));
+            return response._id;
+        } catch (error) {
+            console.error("Error creating quiz:", error);
+            return null;
+        }
+    };
 
     // this is to fetch all the assignments for a course
     const fetchQuizzes = async () => {
@@ -84,11 +114,21 @@ export default function Quiz() {
             <div id="wd-quizzes-controls" className="text-nowrap d-flex">
                 <input id="wd-search-quizzes" className=" form-control me-2" type="Search for Quiz"
                     placeholder="Search for quizzes" />
-                <Link id="wd-add-quizzes-btn" className="btn btn-lg btn-danger me-2 float-end"
-                    to={`/Kanbas/Courses/${cid}/Quizzes/${tempAssignment.id}/edit`}
+                <button 
+                    id="wd-add-quizzes-btn" 
+                    className="btn btn-lg btn-danger me-2 float-end"
+                    onClick={async () => {
+                        console.log("Creating new quiz...");
+                        const newQuizId = await createNewQuiz();
+                        console.log("New quiz ID:", newQuizId);
+                        if (newQuizId) {
+                            navigate(`/Kanbas/Courses/${cid}/Quizzes/${newQuizId}/edit`);
+                        }
+                    }}
                 >
                     <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
-                    quizzes</Link>
+                    Quiz
+                </button>
                 <button id="wd-Group" className="btn btn-lg btn me-2 float-end">
                     <FaCircle className="text-white me-1 fs-6" />
                 </button>

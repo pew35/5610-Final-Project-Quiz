@@ -29,18 +29,24 @@ export default function QuizDetailScreen() {
     const [questions, setQuestions] = useState<any[]>([]);// questions found by quiz id no need to filter change name to questions
     //const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const getAttemptsbyUIdandQId = async () => {
-        console.log("Attempt found: ", currentUser._id, qid)
-        const userattempts = await client.findAttemptsbyUIdandQId(currentUser._id, qid);
-        if (userattempts.length > 0) {
-            getlatestAttemptBYUIdandQId();
-            fetchlatestAnswers();
-            
+        try {
+            console.log("Attempt found: ", currentUser._id, qid)
+            const userattempts = await client.findAttemptsbyUIdandQId(currentUser._id, qid);
+            setAttempts(userattempts);
+            if (userattempts.length > 0) {
+                const latestAttempt = await getlatestAttemptBYUIdandQId();
+                if (latestAttempt) {
+                    await fetchlatestAnswers();
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching attempts:", error);
         }
-        setAttempts(userattempts);
     }
     const getlatestAttemptBYUIdandQId = async () => {
         const latestAttempt = await client.findLatestAttemptsbyUIdandQId(currentUser._id, qid);
         setLatestAttempt(latestAttempt);
+        return latestAttempt;
     }
 
     const fetchQuizData = async () => {
@@ -53,8 +59,14 @@ export default function QuizDetailScreen() {
     };
 
     const fetchlatestAnswers = async () => {
-        const answers = await client.findAttemptsAnswers(latestAttempt._id);
-        setLatestAnswers(answers);
+        try {
+            if (latestAttempt && latestAttempt._id) {
+                const answers = await client.findAttemptsAnswers(latestAttempt._id);
+                setLatestAnswers(answers);
+            }
+        } catch (error) {
+            console.error("Error fetching latest answers:", error);
+        }
     }
 
 

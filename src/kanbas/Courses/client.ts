@@ -66,3 +66,11 @@ export const findPublishedQuizzesForCourse = async (courseId: string) => {
     console.log("Data found for findPublishedQUizzesforcourse: ", response.data)
     return response.data;
 };
+
+export const createQuizForCourse = async (courseId: string, quiz: any) => {
+    const response = await axios.post(
+        `${COURSES_API}/${courseId}/quizzes`,
+        quiz
+    );
+    return response.data;
+};

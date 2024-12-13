@@ -57,28 +57,24 @@ export default function QuizEditor(
         try {
             const quizData = await quizzesClient.findQuizById(quizId as string);
             if (quizData) {
-                const quizData = await quizzesClient.findQuizById(quizId as string);
-                console.log('Set quiz in QuizEditor', quizData)
                 setQuiz(quizData);
                 setQuizDetails({
                     ...quizData,
-                    title: quizData.title || "new quiz",
-                    description: quizData.description || "new quiz description",
+                    title: quizData.title || "New Quiz",
+                    description: quizData.description || "New Quiz Description",
                     instructions: quizData.instructions || "",
                     attempts: quizData.attempts || 1,
                     multipleAttempts: quizData.multipleAttempts || false,
-                    availableDate: quizData.availableDate || "",
-                    availableUntilDate: quizData.availableUntilDate || "",
-                    dueDate: quizData.dueDate || "",
-                    points: quizData.points || 0,
+                    availableDate: quizData.availableDate || new Date().toISOString().split('T')[0],
+                    availableUntilDate: quizData.availableUntilDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    dueDate: quizData.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    points: quizData.points || 100,
                     numberOfQuestions: quizData.numberOfQuestions || 0,
                     timeLimit: quizData.timeLimit || 20,
                     quizType: quizData.quizType || "Graded Quiz",
                     assignmentGroup: quizData.assignmentGroup || "Quizzes",
                     shuffleAnswers: quizData.shuffleAnswers || true,
                 });
-
-                // Initialize questions only once when fetching quiz data
                 setQuestions(quizData.questions || []);
             }
         } catch (error) {
