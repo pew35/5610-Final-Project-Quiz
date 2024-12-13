@@ -246,7 +246,7 @@ export default function QuizDetailScreen() {
                                         <td>
                                             {/* {attempt.date === latestAttempt.date ? 'LATEST' : ''} */}
                                         </td>
-                                        <td style = {{color: "red"}}>Attempt {index}</td>
+                                        <td style = {{color: "red"}}>Attempt {index+1}</td>
                                         
                                         <td>{attempt?.score} out of {quiz.points}</td>
                                     </tr>
