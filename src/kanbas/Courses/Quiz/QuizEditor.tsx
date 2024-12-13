@@ -194,6 +194,7 @@ export default function QuizEditor(
         setQuestions((prevQuestions) =>
           prevQuestions.filter((question) => question._id !== _id)
         );
+        window.location.reload();
     };
 
     const editQuestion = (_id: string) => {

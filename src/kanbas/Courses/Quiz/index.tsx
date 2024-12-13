@@ -141,7 +141,7 @@ export default function Quiz() {
                                                 {` | Due`}
                                             </span>
                                             <span style={{ fontSize: "16px", lineHeight: "1.0" }} className="text-muted">
-                                                {` ${quiz.dueDate}  |  ${quiz.points} pts  |   ${quiz.numberOfQuestions} Questions`}
+                                                {` ${quiz.dueDate}  |  ${quiz.points  || 50 } pts  |   ${quiz.numberOfQuestions} Questions`}
                                             </span>
                                             {latestAttempt && (
                                                  <span style={{ fontSize: "16px", lineHeight: "1.0" }} className="text-muted" >
