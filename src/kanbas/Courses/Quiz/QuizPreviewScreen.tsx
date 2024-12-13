@@ -104,7 +104,7 @@ export default function QuizPreviewScreen() {
             return false;
         }
     
-        const correctAnswer = question.correctAnswer;
+        const correctAnswer = question.answer ? question.answer[0] : ''; 
     
         if (question.type === "Multiple Choice" || question.type === "True or False") {
             return userAnswer === correctAnswer;
