@@ -31,7 +31,7 @@ export const findQuestionsByQuiz = async (quizId: string) => {
 // }
 
 export const createAttempt = async (attempt: any) => {
-    const response = await axios.post(`/api/attempts`, attempt);
+    const response = await axios.post(`http://localhost:4000/api/attempts`, attempt);
     return response.data;
 }
 
@@ -89,3 +89,39 @@ export const updateQuestionsForQuiz = async (quizId: string, questionId: string,
     const response = await axios.put(`${QUIZZES_API}/${quizId}/questions/${questionId}`, updatedQuestion);
     return response.data;
 }
+
+export const saveAnswer = async (answerData: any) => {
+    try {
+        const response = await axios.post(`http://localhost:4000/api/attemptAnswers`, answerData);
+        return response.data; // Return the saved answer data
+    } catch (error: unknown) {
+        // Type narrowing for error
+        if (axios.isAxiosError(error)) {
+            // If the error is an AxiosError, access its properties
+            console.error("Error saving answer:", error.response?.data || error.message);
+            throw new Error(`Failed to save answer: ${error.response ? error.response.data : error.message}`);
+        } else {
+            // Handling any other types of errors
+            console.error("Unexpected error:", error);
+            throw new Error("Failed to save answer due to an unexpected error.");
+        }
+    }
+};
+
+export const updateAttempt = async (attemptId: string, updateData: any) => {
+    try {
+        const response = await axios.post(`http://localhost:4000/api/attempts/${attemptId}`, updateData);
+        return response.data; // Return the updated attempt data
+    } catch (error: unknown) {
+        // Type narrowing for error
+        if (axios.isAxiosError(error)) {
+            // If the error is an AxiosError, access its properties
+            console.error("Error updating attempt:", error.response?.data || error.message);
+            throw new Error(`Failed to update attempt: ${error.response ? error.response.data : error.message}`);
+        } else {
+            // Handling any other types of errors
+            console.error("Unexpected error:", error);
+            throw new Error("Failed to update attempt due to an unexpected error.");
+        }
+    }
+};

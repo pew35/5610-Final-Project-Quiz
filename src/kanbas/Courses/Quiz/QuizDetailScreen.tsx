@@ -144,7 +144,7 @@ export default function QuizDetailScreen() {
 
                                     <div className="col d-flex flex-column align-items-start p-2 my-2">
                                         <span className="text-start my-1">Graded Quiz</span>
-                                        <span className="text-start my-1">{quiz.points}</span>
+                                        <span className="text-start my-1">{quiz.points || 50} </span>
                                         <span className="text-start my-1">QUIZZES</span>
                                         <span className="text-start my-1">No</span>
                                         <span className="text-start my-1">{quiz.timeLimit} Minutes</span>
