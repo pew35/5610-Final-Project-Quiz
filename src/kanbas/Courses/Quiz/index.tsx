@@ -20,14 +20,24 @@ export default function Quiz() {
     const navigate = useNavigate();
 
     const { quizzes = [] } = useSelector((state: any) => state.quizReducerCreate || {});
-    //console.log("Quizzes in component:", quizzes);
-    // set users
     const { currentUser } = useSelector((state: any) => state.accountReducer);
     const [latestAttempt, setLatestAttempt] = useState<any>({});
+    const [quizScores, setQuizScores] = useState<{ [key: string]: number }>({});
+
     const canEdit = ["FACULTY", "TA"].includes(currentUser?.role);
 
     const createNewQuiz = async () => {
+        console.log("Course ID for new quiz:", cid);
+        if (!cid) {
+            console.error("No course ID found");
+            return null;
+        }
+
+        const courseId = cid.toString();
+        
+        const quizId = Date.now().toString();
         const newQuiz = {
+            _id: quizId,
             title: "New Quiz",
             description: "New Quiz Description",
             publish: false,
@@ -42,32 +52,33 @@ export default function Quiz() {
             quizType: "Graded Quiz",
             assignmentGroup: "Quizzes",
             shuffleAnswers: true,
-            courseId: cid
+            courseId: courseId
         };
     
         try {
-            const response = await coursesClient.createQuizForCourse(cid as string, newQuiz);
-            dispatch(addQuiz(response));
-            return response._id;
+            console.log("Sending request to create quiz in course:", cid);
+            const response = await coursesClient.createQuizForCourse(courseId, newQuiz);
+            console.log("Response from create quiz:", response);
+            dispatch(addQuiz(newQuiz));
+            return quizId;
         } catch (error) {
             console.error("Error creating quiz:", error);
             return null;
         }
     };
 
-    // this is to fetch all the assignments for a course
     const fetchQuizzes = async () => {
-        
-        if (currentUser.role === "STUDENT") {
-            console.log(currentUser.role);
-            const quizzes = await coursesClient.findPublishedQuizzesForCourse(cid as string);
-            dispatch(setQuizzes(quizzes));
-        }
-        else {
-            const quizzes = await coursesClient.findQuizzesForCourse(cid as string);
-            dispatch(setQuizzes(quizzes));
+        if (!cid) return;
+        try {
+            const quizData = currentUser.role === "STUDENT"
+                ? await coursesClient.findPublishedQuizzesForCourse(cid)
+                : await coursesClient.findQuizzesForCourse(cid);
+            dispatch(setQuizzes(quizData));
+        } catch (error) {
+            console.error("Error fetching quizzes:", error);
         }
     };
+
     const publishQuiz = async (quiz: any) => {
         const savedQuiz = await quizzesClient.updateQuiz({ ...quiz, publish: !quiz.publish });
         dispatch(updateQuiz(savedQuiz));
@@ -77,7 +88,6 @@ export default function Quiz() {
         await quizzesClient.deleteQuiz(quizId);
         dispatch(deleteQuiz(quizId));
     };
-    const [quizScores, setQuizScores] = useState<{ [key: string]: number }>({});
 
   const getlatestAttemptBYUIdandQId = async (qid: string) => {
     const latestAttempt = await quizzesClient.findLatestAttemptsbyUIdandQId(currentUser._id, qid);
@@ -88,23 +98,21 @@ export default function Quiz() {
 
     useEffect(() => {
         fetchQuizzes();
-    }, [quizzes]);
+    }, [cid, currentUser.role]);
     useEffect(() => {
         const fetchQuizScores = async () => {
-          const scores: { [key: string]: number } = {};
-          for (const quiz of quizzes) {
-            const score = await getlatestAttemptBYUIdandQId(quiz._id);
-            scores[quiz._id] = score;
-          }
-          setQuizScores(scores); // Update the scores state for all quizzes
+            if (!quizzes.length || !currentUser._id) return;
+            const scores: { [key: string]: number } = {};
+            for (const quiz of quizzes) {
+                const score = await getlatestAttemptBYUIdandQId(quiz._id);
+                scores[quiz._id] = score;
+            }
+            setQuizScores(scores);
         };
-    
-        if (quizzes.length > 0) {
-          fetchQuizScores();
-        }
-      }, [quizzes, currentUser._id]);
 
-    //console.log("Quizzes after set: ", quizzes)
+        fetchQuizScores();
+    }, [quizzes.length, currentUser._id]);
+
     const tempAssignment = {
         id: new Date().getTime().toString(),
       };
