@@ -1,7 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {useEffect, useState} from "react";
-import * as db from "../../Database";
 import * as client from "./client";
 import { setQuizzes, addQuiz, deleteQuiz, updateQuiz } from "./quizReducer"
 
@@ -14,59 +13,19 @@ export default function QuizDetailScreen() {
         points: number;
         answer: string;
         option: string[];  // Array of options
-    }
-
-    interface QuizDetails {
-        quizType: string;
-        points: number;
-        assignmentGroup: string;
-        shuffleAnswers: string;
-        timeLimit: string;
-        multipleAttempts: string;
-        viewResponses: string;
-        showCorrectAnswers: string;
-        oneQuestionAtATime: string;
-        requireRespondusLockDown: string;
-        requiredToViewResults: string;
-        webcamRequired: string;
-        lockQuestionsAfterAnswering: string;
-        dueDate: string;
-        availableFrom: string;
-        availableUntil: string;
-        forWho: string;
-        title: string;
-    }
-    
+      }
     
     const dispatch = useDispatch();
     const {pathname} = useLocation();
     const qid = pathname.split("/")[5];
     const { currentUser } = useSelector((state: any) => state.accountReducer);
+    const [loading, setLoading] = useState(true);
+    const [quizData, setQuizData] = useState<any>(null);
 
     const [userAttempts, setAttempts] = useState<any[]>([]); // attempts found by user id and quiz id
     const [latestAttempt, setLatestAttempt] = useState<any>({}); // lstest attempt found by user id and quiz id
     const [latestAnswers, setLatestAnswers] = useState<any[]>([]); // dont know what this is
-    const [loading, setLoading] = useState(true);
-    const [quizDetails, setQuizDetails] = useState<QuizDetails>({
-        quizType: "Graded Quiz",
-        points: 29,
-        assignmentGroup: "QUIZZES",
-        shuffleAnswers: "No",
-        timeLimit: "30 Minutes",
-        multipleAttempts: "No",
-        viewResponses: "Always",
-        showCorrectAnswers: "Immediately",
-        oneQuestionAtATime: "Yes",
-        requireRespondusLockDown: "No",
-        requiredToViewResults: "No",
-        webcamRequired: "No",
-        lockQuestionsAfterAnswering: "No",
-        dueDate: "Sep 21 at 1pm",
-        availableFrom: "Sep 21 at 11:40am",
-        availableUntil: "Sep 21 at 1pm",
-        forWho: "Everyone",
-        title: "Q1 - HTML"
-    });
+    
     const {quizzes} = useSelector((state: any) => state.quizReducerCreate);
     const quiz = quizzes.find((q: any) => q._id === qid);
     const [questions, setQuestions] = useState<any[]>([]);// questions found by quiz id no need to filter change name to questions
@@ -96,9 +55,19 @@ export default function QuizDetailScreen() {
     };
 
     const fetchlatestAnswers = async () => {
-        const answers = await client.findAttemptsAnswers(latestAttempt._id);
-        setLatestAnswers(answers);
-    }
+        if (!latestAttempt?._id) {
+            setLatestAnswers([]);
+            return;
+        }
+        
+        try {
+            const answers = await client.findAttemptsAnswers(latestAttempt._id);
+            setLatestAnswers(answers || []);
+        } catch (error) {
+            console.log("Error fetching answers:", error);
+            setLatestAnswers([]);
+        }
+    };
 
 
 
@@ -130,37 +99,33 @@ export default function QuizDetailScreen() {
 
 
     useEffect(() => {
-        fetchQuizData();
-        getAttemptsbyUIdandQId();
-        
-    }, [currentUser, qid])
-
-    useEffect(() => {
-        const fetchQuizDetails = async () => {
+        const loadData = async () => {
             try {
                 setLoading(true);
                 const quiz = await client.findQuizById(qid);
-                setQuizDetails({
-                    ...quizDetails,
-                    quizType: quiz.quizType,
-                    points: quiz.points,
-                    assignmentGroup: quiz.assignmentGroup,
-                    shuffleAnswers: quiz.shuffleAnswers ? "Yes" : "No",
-                    timeLimit: `${quiz.timeLimit || 20} Minutes`,
-                    title: quiz.title,
-                    dueDate: quiz.dueDate,
-                    availableFrom: quiz.availableDate,
-                    availableUntil: quiz.availableUntilDate
-                });
+                setQuizData(quiz);
+                await fetchQuizData();
+                await getAttemptsbyUIdandQId();
             } catch (error) {
-                console.error("Error fetching quiz details:", error);
+                console.error("Error loading data:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchQuizDetails();
-    }, [qid]);
+        loadData();
+    }, [currentUser, qid]);
 
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (!quizData) {
+        return <div>Quiz not found</div>;
+    }
+
+    if (!quiz) {
+        return <div>Loading quiz data...</div>;
+    }
 
     return (
         console.log("quiz",quiz),
@@ -189,7 +154,7 @@ export default function QuizDetailScreen() {
                     {currentUser.role === "FACULTY" ? (
                         <>
                             <hr />
-                            <h4>{quizDetails.title}</h4>
+                            <h4>{quiz.title}</h4>
 
                             {/* Quiz details for faculty */}
                             <div className="container">

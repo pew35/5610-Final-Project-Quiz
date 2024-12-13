@@ -41,8 +41,12 @@ export const createAttempt = async (attempt: any) => {
 // };
 
 export const findAttemptsAnswers = async (attemptId: string) => {
-    const response = await axios.get(`/api/attempts/${attemptId}/attemptAnswers`);
-    return response.data;
+    try {    const response = await axios.get(`/QUIZZES_API/attempts/${attemptId}/attemptAnswers`);
+} catch (error) {
+    console.log("Error fetching attempt answers:", error);
+    return []; // 返回空数组而不是抛出错误
+}
+
 };
 
 export const createQuestionForQuiz = async (question: any) => {

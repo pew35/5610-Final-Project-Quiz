@@ -126,55 +126,19 @@ export default function QuizEditor(
       // need to modify for the backend
       const handleSaveQuizDetails = async () => {
         try {
-            // 1. First save all questions
-            console.log("Saving questions:", questions);
-            for (const question of questions) {
-                try {
-                    if (question._id) {
-                        console.log("Updating question:", question);
-                        await quizzesClient.updateQuestionsForQuiz(quizId as string, question._id, question);
-                    } else {
-                        console.log("Creating new question:", question);
-                        await quizzesClient.createQuestionsForQuiz(question);
-                    }
-                } catch (questionError) {
-                    console.error("Error saving question:", questionError);
-                    alert(`Failed to save question: ${question.title}`);
-                    return;
-                }
-            }
-
-            // 2. Update quiz points
-            try {
-                console.log("Updating quiz points for quiz:", quizId);
-                await quizzesClient.updateQuizPoints(quizId as string);
-            } catch (pointsError) {
-                console.error("Error updating quiz points:", pointsError);
-                alert("Failed to update quiz points");
-                return;
-            }
+            const updatedQuizData = {
+                ...quizDetails,
+                _id: quizId,
+                courseId: cid,
+            };
             
-            // 3. Update quiz details
-            try {
-                const updatedQuizData = {
-                    ...quizDetails,
-                    _id: quizId,
-                    courseId: cid,
-                };
-                console.log("Saving quiz details:", updatedQuizData);
-                
-                const updatedQuiz = await quizzesClient.updateQuiz(updatedQuizData);
-                console.log("Quiz saved successfully:", updatedQuiz);
-                
-                navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}`);
-            } catch (quizError) {
-                console.error("Error saving quiz details:", quizError);
-                alert("Failed to save quiz details");
-                return;
-            }
-        } catch (error: any) {
-            console.error("General error saving quiz:", error);
-            alert(`Failed to save quiz: ${error.message || 'Unknown error'}`);
+            const updatedQuiz = await quizzesClient.updateQuiz(updatedQuizData);
+            console.log("Quiz saved successfully:", updatedQuiz);
+            
+            // Navigate back to quiz details page
+            navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}`);
+        } catch (error) {
+            console.error("Error saving quiz:", error);
         }
     };
 
