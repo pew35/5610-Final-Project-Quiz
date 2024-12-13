@@ -6,10 +6,20 @@ import * as client from "./client";
 import { setQuizzes, addQuiz, deleteQuiz, updateQuiz } from "./quizReducer"
 
 export default function QuizDetailScreen() {
+    interface Question {
+        _id: string;
+        quizId: string;
+        question: string;
+        type: string;
+        points: number;
+        answer: string;
+        option: string[];  // Array of options
+      }
     
     const dispatch = useDispatch();
     const {pathname} = useLocation();
     const qid = pathname.split("/")[5];
+    const { currentUser } = useSelector((state: any) => state.accountReducer);
 
     const [userAttempts, setAttempts] = useState<any[]>([]); // attempts found by user id and quiz id
     const [latestAttempt, setLatestAttempt] = useState<any>({}); // lstest attempt found by user id and quiz id
@@ -17,12 +27,13 @@ export default function QuizDetailScreen() {
     const {quizzes} = useSelector((state: any) => state.quizReducerCreate);
     const quiz = quizzes.find((q: any) => q._id === qid);
     const [questions, setQuestions] = useState<any[]>([]);// questions found by quiz id no need to filter change name to questions
-    
+    //const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const getAttemptsbyUIdandQId = async () => {
         console.log("Attempt found: ", currentUser._id, qid)
         const userattempts = await client.findAttemptsbyUIdandQId(currentUser._id, qid);
-        if (userAttempts.length > 0) {
+        if (userattempts.length > 0) {
             getlatestAttemptBYUIdandQId();
+            fetchlatestAnswers();
             
         }
         setAttempts(userattempts);
@@ -41,13 +52,18 @@ export default function QuizDetailScreen() {
         } 
     };
 
+    const fetchlatestAnswers = async () => {
+        const answers = await client.findAttemptsAnswers(latestAttempt._id);
+        setLatestAnswers(answers);
+    }
+
 
 
     
-    const answers = db.answers;
+    //const answers = db.answers;
     
     const parentPath = pathname.split('/').slice(0, -1).join('/');
-    const { currentUser } = useSelector((state: any) => state.accountReducer);
+    
     //const quiz = quizzes.filter((q: any) => q.id === qid)
     const filteredQuestions = questions.filter((q: any) => q.quizId === qid);
     const { quizStatuses } = useSelector((state: any) => state.quizReducer);
@@ -243,7 +259,7 @@ export default function QuizDetailScreen() {
                             <h6>Submitted {latestAttempt?.date}</h6>
                         </div><br />
 
-                        {questions.map((question, index) => {
+                        {questions.map((question: Question, index: number) => {
                             const userAnswer = latestAnswers.find(answer => answer.questionID === question._id);
                             const isUserAnswerCorrect = userAnswer && userAnswer.isCorrect;
                             const userSelectedAnswer = userAnswer ? userAnswer.answer[0] : null;
@@ -276,7 +292,7 @@ export default function QuizDetailScreen() {
                                     }}>
                                         <p>{question.question}</p>
 
-                                        {/* {question.type === "Multiple Choice" && (
+                                        {question.type === "Multiple Choice" && (
                                             <div>
                                                 <hr />
                                                 {question.option.map((opt, idx) => {
@@ -327,7 +343,7 @@ export default function QuizDetailScreen() {
                                             </div>
                                         )}
 
-                                        {question.type === "True or False" && (
+                                        {question.type === "True/False" && (
                                             <div>
                                                 <hr />
                                                 {question.option.map((opt, idx) => {
@@ -376,9 +392,9 @@ export default function QuizDetailScreen() {
                                                     );
                                                 })}
                                             </div>
-                                        )} */}
+                                        )}
 
-                                        {question.type === "Fill in the blank" && (
+                                        {question.type === "Fill in the Blank" && (
                                             <div>
                                                 <input
                                                     type="text"
