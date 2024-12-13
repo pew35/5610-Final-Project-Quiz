@@ -179,13 +179,12 @@ export default function QuizEditor(
         );
     };
 
-    const saveQuestion = async (_id: string, quizId: string | null = null) => {
+    const saveQuestion = async (_id: string, quizId: string) => {
         const questionToSave = questions.find((q) => q._id === _id);
         if (questionToSave) {
-            const savedData = await quizzesClient.createQuestionsForQuiz(questionToSave);
+            const savedData = await quizzesClient.createQuestionsForQuiz(questionToSave, quizId);
             console.log("successfully save question to db", savedData);
             setSavedQuestions([questionToSave, ...savedQuestions]); // Add saved question to the top
-            // deleteQuestion(_id); // Remove from editable questions
         }
     };
 

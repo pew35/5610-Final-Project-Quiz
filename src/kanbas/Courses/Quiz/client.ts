@@ -76,9 +76,9 @@ export const deleteQuestions = async (quizId: string, questionsId: string) => {
     return response.data;
 };
 
-export const createQuestionsForQuiz = async ( question: any) => {
+export const createQuestionsForQuiz = async ( question: any, quizId: string) => {
     const response = await axiosWithCredentials.post(
-        `${QUESTIONS_API}`, question
+        `${QUIZZES_API}/${quizId}/questions`, question
     )
     console.log("Server side createQuestionsForQuiz: ", question)
     return response.data;
