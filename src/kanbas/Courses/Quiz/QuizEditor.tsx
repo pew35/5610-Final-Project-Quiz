@@ -15,7 +15,7 @@ type Question = {
   title: string;
   type: string;
   question: string,
-  Option: string[],
+  option: string[],
   answer: string[],
   points: number
 };
@@ -145,6 +145,7 @@ export default function QuizEditor(
     // this is all const related to adding new questions
     const [questions, setQuestions] = useState<Question[]>([]);
     const [savedQuestions, setSavedQuestions] = useState<Question[]>([]);
+    const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
 
     // this is used as id
     const question_length = Date.now()
@@ -158,7 +159,7 @@ export default function QuizEditor(
             title: "",
             type: "Multiple Choice",
             question: "",
-            Option: [],
+            option: [],
             answer: [],
             points: 0,
         };
@@ -178,7 +179,7 @@ export default function QuizEditor(
         );
     };
 
-    const saveQuestion = async (_id: string) => {
+    const saveQuestion = async (_id: string, quizId: string | null = null) => {
         const questionToSave = questions.find((q) => q._id === _id);
         if (questionToSave) {
             const savedData = await quizzesClient.createQuestionsForQuiz(questionToSave);
@@ -196,6 +197,8 @@ export default function QuizEditor(
     };
 
     const editQuestion = (_id: string) => {
+        console.log("Editting question id: ", _id)
+        setEditingQuestionId(_id);
         const questionToEdit = savedQuestions.find((q) => q._id === _id);
         if (questionToEdit) {
           setQuestions([...questions, questionToEdit]);
@@ -204,6 +207,15 @@ export default function QuizEditor(
           );
         }
     };
+
+    const updateQuestion = async (_id: string) => {
+        const questionToSave = questions.find((q) => q._id === _id);
+        if (questionToSave) {
+            const savedData = await quizzesClient.updateQuestionsForQuiz(quizId, _id, questionToSave);
+            setSavedQuestions([questionToSave, ...savedQuestions]);
+            console.log("successfully save question to db", questionToSave);
+        }
+    }
 
     const deleteSavedQuestion = async (questionId: string) => {
         try {
@@ -232,7 +244,7 @@ export default function QuizEditor(
                         question = {question}
                         onChange = { (updatedQuestions, updatedOptions, updatedAnswers) => {
                             updateQuestionField(question._id, "question", updatedQuestions);
-                            updateQuestionField(question._id, "Option", updatedOptions);
+                            updateQuestionField(question._id, "option", updatedOptions);
                             updateQuestionField(question._id, "answer", updatedAnswers);
                         } }
                     />
@@ -243,7 +255,7 @@ export default function QuizEditor(
                     question={question}
                     onChange={(updatedQuestions, updatedOptions, updatedAnswers) => {
                         updateQuestionField(question._id, "question", updatedQuestions);
-                        updateQuestionField(question._id, "Option", updatedOptions);
+                        updateQuestionField(question._id, "option", updatedOptions);
                         updateQuestionField(question._id, "answer", updatedAnswers);
                     }}/> 
                 );
@@ -630,14 +642,11 @@ export default function QuizEditor(
     </div>
   )}
 
-
-
-
-  {activeTab === "questions" && (
-    <div>
+    {activeTab === "questions" && (
+        <div>
             {savedQuestions.map((question, index) => (
                 <div key={question._id} className="mb-3 p-3 border rounded bg-light">
-                <h5>Question {question._id}</h5>
+                <h5>Question {question.title}</h5>
                     <p><strong>Type:</strong> {question.type}</p>
                     <p><strong>Question:</strong> {question.question}</p>
                     <button className="btn btn-warning me-2" onClick={() => editQuestion(question._id)}> Edit </button>
@@ -652,7 +661,7 @@ export default function QuizEditor(
                 </div>
                 
                 {questions.map((question) => (
-                    <div key={question._id} className="mb-3 p-3 border rounded">
+                    <div key={question.title} className="mb-3 p-3 border rounded">
                         <div className="card-body">
                             <form className="row g-3">
                                 <div className="d-flex align-items-center  p-2 my-2">
@@ -708,13 +717,24 @@ export default function QuizEditor(
                     
                         <br/>
                         <hr/>
+                        {editingQuestionId === null && (
+                            <div id="wd-Assignment-controls" className="text-nowrap ">
+                                <button id="wd-add-Assignment-btn" className="btn btn-success me-2" onClick={() => saveQuestion(question._id, quizId)}> Add </button>
+                                <button id="wd-add-Assignment-btn" className="btn btn-danger" onClick={() => cancelQuestion(question._id)} > Cancel </button>
+                            </div>
+                        )}
 
-                        <div id="wd-Assignment-controls" className="text-nowrap ">
-                            <button id="wd-add-Assignment-btn" className="btn btn-success me-2" onClick={() => saveQuestion(question._id)}> Add </button>
-                            <button id="wd-add-Assignment-btn" className="btn btn-danger" onClick={() => cancelQuestion(question._id)} > Cancel </button>
-                        </div>
+                        {
+                            editingQuestionId && (
+                                <div id="wd-Assignment-controls" className="text-nowrap ">
+                                    <button id="wd-add-Assignment-btn" className="btn btn-success me-2" onClick={() => {updateQuestion(question._id); window.location.reload()}}> Update </button>
+                                    <button id="wd-add-Assignment-btn" className="btn btn-danger" onClick={() => cancelQuestion(question._id)} > Cancel </button>
+                                </div>
+                            )
+                        }
+                        
                     </div>
-                    ))}
+                ))}
                     </div>
                 </div>
             )}
