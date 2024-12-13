@@ -104,11 +104,11 @@ export default function QuizPreviewScreen() {
             return false;
         }
     
-        const correctAnswer = question.correctAnswer;
+        const correctAnswer = question.answer ? question.answer[0] : '';
     
-        if (question.type === "Multiple Choice" || question.type === "True or False") {
+        if (question.type === "Multiple Choice" || question.type === "True/False") {
             return userAnswer === correctAnswer;
-        } else if (question.type === "Fill in the blank") {
+        } else if (question.type === "Fill in the Blank") {
             return userAnswer === correctAnswer;
         }
     
@@ -169,7 +169,7 @@ export default function QuizPreviewScreen() {
                     attemptId: savedAttempt._id,
                     questionId,
                     answer: [answer], 
-                    isCorrect
+                    isCorrect: isCorrect
                 };
     
                 await quizClient.saveAnswer(answerData);

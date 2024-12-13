@@ -98,7 +98,7 @@ export default function Quiz() {
 
     useEffect(() => {
         fetchQuizzes();
-    }, [cid, currentUser.role]);
+    }, [cid, currentUser.role,quizzes]);
     useEffect(() => {
         const fetchQuizScores = async () => {
             if (!quizzes.length || !currentUser._id) return;

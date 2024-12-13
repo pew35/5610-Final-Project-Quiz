@@ -5,6 +5,7 @@ const axiosWithCredentials = axios.create({ withCredentials: true });
 const REMOTE_SERVER = process.env.REACT_APP_REMOTE_SERVER;
 const QUIZZES_API = `${REMOTE_SERVER}/api/quizzes`;
 const QUESTIONS_API =  `${REMOTE_SERVER}/api/questions`
+const ATTEMPTS_API = `${REMOTE_SERVER}/api/attempts`
 
 export const findQuizById = async (quizId: string) => {
     const response = await axios.get(`${QUIZZES_API}/${quizId}`);
@@ -31,7 +32,7 @@ export const findQuestionsByQuiz = async (quizId: string) => {
 // }
 
 export const createAttempt = async (attempt: any) => {
-    const response = await axios.post(`http://localhost:4000/api/attempts`, attempt);
+    const response = await axios.post(`${ATTEMPTS_API}`, attempt);
     return response.data;
 }
 
@@ -41,7 +42,7 @@ export const createAttempt = async (attempt: any) => {
 // };
 
 export const findAttemptsAnswers = async (attemptId: string) => {
-    const response = await axios.get(`/api/attempts/${attemptId}/attemptAnswers`);
+    const response = await axios.get(`${ATTEMPTS_API}/${attemptId}/attemptAnswers`);
     return response.data;
 };
 

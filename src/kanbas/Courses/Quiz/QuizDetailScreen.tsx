@@ -1,9 +1,11 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {useEffect, useState} from "react";
 import * as db from "../../Database";
 import * as client from "./client";
 import { setQuizzes, addQuiz, deleteQuiz, updateQuiz } from "./quizReducer"
+import * as coursesClient from "../client";
+
 
 export default function QuizDetailScreen() {
     interface Question {
@@ -15,7 +17,8 @@ export default function QuizDetailScreen() {
         answer: string;
         option: string[];  // Array of options
       }
-    
+
+    const { cid } = useParams();
     const dispatch = useDispatch();
     const {pathname} = useLocation();
     const qid = pathname.split("/")[5];
@@ -68,6 +71,17 @@ export default function QuizDetailScreen() {
             console.error("Error fetching latest answers:", error);
         }
     }
+    const fetchQuizzes = async () => {
+        if (!cid) return;
+        try {
+            const quizData = currentUser.role === "STUDENT"
+                ? await coursesClient.findPublishedQuizzesForCourse(cid)
+                : await coursesClient.findQuizzesForCourse(cid);
+            dispatch(setQuizzes(quizData));
+        } catch (error) {
+            console.error("Error fetching quizzes:", error);
+        }
+    };
 
 
 
@@ -99,10 +113,11 @@ export default function QuizDetailScreen() {
 
 
     useEffect(() => {
+        fetchQuizzes();
         fetchQuizData();
         getAttemptsbyUIdandQId();
         
-    }, [currentUser, qid])
+    }, [currentUser, qid, quizzes])
 
 
     return (
@@ -129,7 +144,7 @@ export default function QuizDetailScreen() {
 
             
                 <div id="wd-assignments-editor">
-                    {currentUser.role === "FACULTY" ? (
+                    {currentUser.role === "FACULTY" && quiz ? (
                         <>
                             <hr />
                             <h4>{quiz.title}</h4>
@@ -272,7 +287,7 @@ export default function QuizDetailScreen() {
                         </div><br />
 
                         {questions.map((question: Question, index: number) => {
-                            const userAnswer = latestAnswers.find(answer => answer.questionID === question._id);
+                            const userAnswer = latestAnswers.find(answer => answer.questionId === question._id);
                             const isUserAnswerCorrect = userAnswer && userAnswer.isCorrect;
                             const userSelectedAnswer = userAnswer ? userAnswer.answer[0] : null;
                             const pointsAwarded = isUserAnswerCorrect ? question.points : 0;
@@ -283,6 +298,7 @@ export default function QuizDetailScreen() {
 
                             const questionBackgroundColor = showAnswer ? (isUserAnswerCorrect ? "lightgreen" : "lightcoral") : "gray";
 
+                            console.log("Question!!!!: ", isUserAnswerCorrect, userSelectedAnswer);
                             return (
                                 <div key={question._id} className="mb-4">
                                     <div className="d-flex justify-content-between align-items-center p-3"
