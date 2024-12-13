@@ -125,3 +125,13 @@ export const updateAttempt = async (attemptId: string, updateData: any) => {
         }
     }
 };
+
+export const updateQuizPoints = async (quizId: string, totalPoints: number) => {
+    try {
+        const response = await axios.put(`${QUIZZES_API}/${quizId}/points`, { totalPoints });
+        return response.data;
+    } catch (error) {
+        console.error("Error updating quiz points:", error);
+        throw error;
+    }
+};

@@ -66,3 +66,35 @@ export const findPublishedQuizzesForCourse = async (courseId: string) => {
     console.log("Data found for findPublishedQUizzesforcourse: ", response.data)
     return response.data;
 };
+
+export const createQuizForCourse = async (courseId: string, quiz: any) => {
+    try {
+        console.log("Creating quiz with URL:", `${REMOTE_SERVER}/api/quizzes`);
+        console.log("Quiz data:", quiz);
+        
+        const response = await axios.post(
+            `${REMOTE_SERVER}/api/quizzes`,
+            quiz,
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                withCredentials: true
+            }
+        );
+        return response.data;
+    } catch (error: any) {
+        console.error("API Error:", {
+            message: error.message,
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            config: {
+                url: error.config?.url,
+                method: error.config?.method,
+                data: error.config?.data
+            }
+        });
+        throw error;
+    }
+};
