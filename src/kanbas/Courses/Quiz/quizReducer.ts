@@ -26,7 +26,7 @@ const quizzesSlice = createSlice({
                 attempts: quiz.attempts,
                 availableDate: quiz.availableDate,
                 availableUntilDate: quiz.availableUntilDate,
-                points: quiz.point,
+                points: quiz.points,
                 dueDate: quiz.dueDate,
                 numberOfQuestions: quiz.numberOfQuestions,
                 timeLimit: quiz.timeLimit,

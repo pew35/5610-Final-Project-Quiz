@@ -44,7 +44,7 @@ export const findAttemptsAnswers = async (attemptId: string) => {
     try {    const response = await axios.get(`/QUIZZES_API/attempts/${attemptId}/attemptAnswers`);
 } catch (error) {
     console.log("Error fetching attempt answers:", error);
-    return []; // 返回空数组而不是抛出错误
+    return []; 
 }
 
 };
@@ -139,5 +139,14 @@ export const updateQuizPoints = async (quizId: string) => {
     } catch (error) {
         console.error("Error in updateQuizPoints:", error);
         throw error; // Re-throw to handle in component
+    }
+};
+
+export const createQuiz = async (quiz: any) => {
+    try {
+        const response = await axios.post(`${QUIZZES_API}`, quiz);
+        return response.data;
+    } catch (error) {
+        throw error; // We'll let the component handle this error
     }
 };
