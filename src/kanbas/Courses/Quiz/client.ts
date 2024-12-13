@@ -125,3 +125,15 @@ export const updateAttempt = async (attemptId: string, updateData: any) => {
         }
     }
 };
+
+export const updateQuizPoints = async (quizId: string) => {
+    try {
+        console.log("Calling updateQuizPoints for quiz:", quizId);
+        const response = await axios.put(`${QUIZZES_API}/${quizId}/points`);
+        console.log("Update points response:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error in updateQuizPoints:", error);
+        throw error; // Re-throw to handle in component
+    }
+};
