@@ -50,14 +50,27 @@ export default function QuizEditor(
     const courseId = pathname.split("/")[3]
     const cid = pathname.split("/")[3]
     const navigate = useNavigate();
+    const [totalPoints, setTotalPoints] = useState(0);
+    const calculateTotalPoints = () => {
+        const total = [...questions, ...savedQuestions].reduce(
+            (sum, question) => sum + (question.points || 0),
+            0
+        );
+        setTotalPoints(total);
+        return total;
+    };
 
     const [quiz, setQuiz] = useState<any>(null); // Local state to hold quiz data
     
     const fetchQuiz = async () => {
         try {
             const quizData = await quizzesClient.findQuizById(quizId as string);
+            const questions = await quizzesClient.findQuestionsByQuiz(quizId);
             if (quizData) {
                 setQuiz(quizData);
+                setSavedQuestions(questions);
+                const total = questions.reduce((sum: number, q: Question) => sum + (q.points || 0), 0);
+                setTotalPoints(total);
                 setQuizDetails({
                     ...quizData,
                     title: quizData.title || "New Quiz",
@@ -179,8 +192,11 @@ export default function QuizEditor(
         const questionToSave = questions.find((q) => q._id === _id);
         if (questionToSave) {
             const savedData = await quizzesClient.createQuestionsForQuiz(questionToSave, quizId);
-            console.log("successfully save question to db", savedData);
-            setSavedQuestions([questionToSave, ...savedQuestions]); // Add saved question to the top
+            setSavedQuestions(prev => {
+                const newSavedQuestions = [questionToSave, ...prev];
+                calculateTotalPoints(); 
+                return newSavedQuestions;
+            });
         }
     };
 
@@ -207,26 +223,27 @@ export default function QuizEditor(
     const updateQuestion = async (_id: string) => {
         const questionToSave = questions.find((q) => q._id === _id);
         if (questionToSave) {
-            const savedData = await quizzesClient.updateQuestionsForQuiz(quizId, _id, questionToSave);
-            setSavedQuestions([questionToSave, ...savedQuestions]);
-            console.log("successfully save question to db", questionToSave);
+            await quizzesClient.updateQuestionsForQuiz(quizId, _id, questionToSave);
+            setSavedQuestions(prev => {
+                const newSavedQuestions = [questionToSave, ...prev];
+                calculateTotalPoints(); 
+                return newSavedQuestions;
+            });
         }
-    }
+    };
 
     const deleteSavedQuestion = async (questionId: string) => {
         try {
-            const response = await quizzesClient.deleteQuestions(quizId, questionId); // Replace with your actual API function
+            const response = await quizzesClient.deleteQuestions(quizId, questionId);
             if (response.success) {
-                console.log("Successfully deleted question:", questionId);
-                // Update state to reflect deletion
-                setQuestions((prevQuestions) => prevQuestions.filter((q) => q._id !== questionId) );
-            } else {
-                console.error("Delete operation failed:", response.message);
-                alert("Failed to delete the question. Please try again.");
+                setSavedQuestions(prev => {
+                    const newSavedQuestions = prev.filter(q => q._id !== questionId);
+                    calculateTotalPoints(); 
+                    return newSavedQuestions;
+                });
             }
         } catch (error) {
             console.error("Error deleting question:", error);
-            alert("An error occurred while deleting the question. Please try again.");
         }
     };
     
@@ -295,10 +312,16 @@ export default function QuizEditor(
 
     return (
         <div>
-            {quiz ? ( <h1>{quiz.title}</h1> ) : ( <p>Loading...</p> )}
-
-
+        <div className="d-flex justify-content-between align-items-center">
             <div>
+                {quiz ? ( <h1>{quiz.title}</h1> ) : ( <p>Loading...</p> )}
+            </div>
+            <div className="ms-auto">
+                <h3>Total Points: {totalPoints}</h3>
+            </div>
+        </div>
+
+        <div>
         {/* Navigation Tabs */}
         <ul className="nav nav-tabs">
           <li className="nav-item">
