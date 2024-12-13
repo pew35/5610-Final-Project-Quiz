@@ -164,7 +164,7 @@ export default function QuizPreviewScreen() {
                                             </div>
                                         )}
 
-                                        {currentQuestion?.type === "True or False" && (
+                                        {currentQuestion?.type === "True/False" && (
                                             <div>
                                                 <hr />{currentQuestion.option.map((opt: string, idx: number) => (
                                                     <div key={idx}>
@@ -185,7 +185,7 @@ export default function QuizPreviewScreen() {
                                             </div>
                                         )}
 
-                                        {currentQuestion?.type === "Fill in the blank" && (
+                                        {currentQuestion?.type === "Fill in the Blank" && (
                                             <div>
                                                 <input
                                                     type="text"

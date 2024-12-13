@@ -27,7 +27,9 @@ export default function Quiz() {
 
     // this is to fetch all the assignments for a course
     const fetchQuizzes = async () => {
+        
         if (currentUser.role === "STUDENT") {
+            console.log(currentUser.role);
             const quizzes = await coursesClient.findPublishedQuizzesForCourse(cid as string);
             dispatch(setQuizzes(quizzes));
         }
@@ -56,7 +58,7 @@ export default function Quiz() {
 
     useEffect(() => {
         fetchQuizzes();
-    }, []);
+    }, [quizzes]);
     useEffect(() => {
         const fetchQuizScores = async () => {
           const scores: { [key: string]: number } = {};
@@ -73,6 +75,9 @@ export default function Quiz() {
       }, [quizzes, currentUser._id]);
 
     //console.log("Quizzes after set: ", quizzes)
+    const tempAssignment = {
+        id: new Date().getTime().toString(),
+      };
 
     return (
         <div id="wd-quizzes">
@@ -80,7 +85,7 @@ export default function Quiz() {
                 <input id="wd-search-quizzes" className=" form-control me-2" type="Search for Quiz"
                     placeholder="Search for quizzes" />
                 <Link id="wd-add-quizzes-btn" className="btn btn-lg btn-danger me-2 float-end"
-                    to={`/Kanbas/Courses/`}
+                    to={`/Kanbas/Courses/${cid}/Quizzes/${tempAssignment.id}/edit`}
                 >
                     <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
                     quizzes</Link>
@@ -136,7 +141,7 @@ export default function Quiz() {
                                                 {` | Due`}
                                             </span>
                                             <span style={{ fontSize: "16px", lineHeight: "1.0" }} className="text-muted">
-                                                {` ${quiz.dueDate}  |  ${quiz.points} pts  |   ${quiz.numberOfQuestion} Questions`}
+                                                {` ${quiz.dueDate}  |  ${quiz.points} pts  |   ${quiz.numberOfQuestions} Questions`}
                                             </span>
                                             {latestAttempt && (
                                                  <span style={{ fontSize: "16px", lineHeight: "1.0" }} className="text-muted" >
@@ -170,8 +175,7 @@ export default function Quiz() {
                                                         <li
                                                             className="dropdown-item"
                                                             style={{ padding: "8px 15px", cursor: "pointer" }}
-                                                            onClick={() => alert("Delete")}
-                                                            // onClick={() => removeQuiz(quiz._id)}!!!!!!!!!!!!!! Dont forget to uncomment this line
+                                                            onClick={() => removeQuiz(quiz._id)}
                                                         >
                                                             Delete
                                                         </li>
